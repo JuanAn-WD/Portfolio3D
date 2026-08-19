@@ -1,4 +1,4 @@
-import { useRef, useState, useMemo } from 'react'
+import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { dampAngle } from '../helpers/dampAngle'
@@ -13,7 +13,7 @@ export function GlobePet({ modelPath, position = [0, 0, 0], scale = 0.35, speed 
   const meshRef = useRef()
   const initialLat = position[2] / 50
   const initialLon = -position[0] / 50
-  const [targetLatLon, setTargetLatLon] = useState([initialLat, initialLon])
+  const targetLatLon = useRef([initialLat, initialLon])
   const waitTimer = useRef(0)
   const animalRot = useRef(0)
 
@@ -22,17 +22,17 @@ export function GlobePet({ modelPath, position = [0, 0, 0], scale = 0.35, speed 
     waitTimer.current -= delta
 
     if (waitTimer.current <= 0) {
-      setTargetLatLon([initialLat + (Math.random() - 0.5) * 0.2, initialLon + (Math.random() - 0.5) * 0.2])
+      targetLatLon.current = [initialLat + (Math.random() - 0.5) * 0.2, initialLon + (Math.random() - 0.5) * 0.2]
       waitTimer.current = 3 + Math.random() * 4
     }
 
     const currentLat = pivotRef.current.rotation.x
     const currentLon = pivotRef.current.rotation.z
-    pivotRef.current.rotation.x = THREE.MathUtils.damp(currentLat, targetLatLon[0], speed, delta)
-    pivotRef.current.rotation.z = THREE.MathUtils.damp(currentLon, targetLatLon[1], speed, delta)
+    pivotRef.current.rotation.x = THREE.MathUtils.damp(currentLat, targetLatLon.current[0], speed, delta)
+    pivotRef.current.rotation.z = THREE.MathUtils.damp(currentLon, targetLatLon.current[1], speed, delta)
 
-    const dLat = targetLatLon[0] - currentLat
-    const dLon = targetLatLon[1] - currentLon
+    const dLat = targetLatLon.current[0] - currentLat
+    const dLon = targetLatLon.current[1] - currentLon
     if (Math.abs(dLat) > 0.0001 || Math.abs(dLon) > 0.0001) {
       animalRot.current = dampAngle(animalRot.current, Math.atan2(-dLon, dLat), 8, delta)
     }

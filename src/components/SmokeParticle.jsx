@@ -29,12 +29,12 @@ function SmokeParticle({ baseY, index }) {
 /**
  * A chimney prop that continuously emits looping smoke particles above it.
  */
-export function Chimney({ path = "/models/Edifices/chimney-medium.glb", position = [0, 0, 0], scale = 1 }) {
+export function Chimney({ path = "/models/Edifices/chimney-medium.glb", position = [0, 0, 0], scale = 1, count = 3 }) {
   return (
     <group position={position}>
       <Prop path={path} scale={scale} />
       <group position={[0, 1.2 * scale, 0]}>
-        {[0, 1, 2].map((i) => <SmokeParticle key={i} baseY={0} index={i} />)}
+        {Array.from({ length: count }, (_, i) => <SmokeParticle key={i} baseY={0} index={i} />)}
       </group>
     </group>
   )

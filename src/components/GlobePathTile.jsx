@@ -23,11 +23,11 @@ function GlobePathTile({ position, rotationY = 0, isWinter }) {
  */
 export function GlobePath({ start, end, steps = 10, isWinter }) {
   const tiles = []
+  const rotY = Math.atan2(start[0] - end[0], start[1] - end[1])
   for (let i = 0; i <= steps; i++) {
     const t = i / steps
     const x = start[0] + (end[0] - start[0]) * t
     const z = start[1] + (end[1] - start[1]) * t
-    const rotY = Math.atan2(start[0] - end[0], start[1] - end[1])
     tiles.push(<GlobePathTile key={i} position={[x, 0, z]} rotationY={rotY} isWinter={isWinter} />)
   }
   return <>{tiles}</>

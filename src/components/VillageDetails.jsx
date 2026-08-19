@@ -57,13 +57,7 @@ export function VillageDetails({ isWinter }) {
       <GlobeDetail modelPath="/models/ExtDecoration/poles.glb" position={[-6, 0, 1.5]} scale={1.0}
         light={{ position: [0, 2.5, 0], intensity: 2.0, color: '#fde68a', distance: 5 }} />
 
-      {/* 🪵 VALLAS delimitando zonas */}
-      <GlobeDetail modelPath="/models/ExtDecoration/fence-straight.glb" position={[-3, 0, -9]} rotation={[0, Math.PI / 4, 0]} scale={1.2} />
-      <GlobeDetail modelPath="/models/ExtDecoration/fence-straight.glb" position={[-6, 0, -7]} rotation={[0, Math.PI / 4, 0]} scale={1.2} />
-      <GlobeDetail modelPath="/models/ExtDecoration/fence-corner.glb" position={[-7, 0, -8]} rotation={[0, Math.PI / 4, 0]} scale={1.2} />
-
-      <GlobeDetail modelPath="/models/ExtDecoration/fence-straight.glb" position={[10, 0, -5]} rotation={[0, -Math.PI / 3, 0]} scale={1.2} />
-      <GlobeDetail modelPath="/models/ExtDecoration/fence-straight.glb" position={[9, 0, -6]} rotation={[0, -Math.PI / 3, 0]} scale={1.2} />
+      {/* Las vallas han sido eliminadas para dejar más espacio abierto */}
 
       {/* 🪑 BANCOS junto a caminos */}
       <GlobeDetail modelPath="/models/InteriorHouse/bench.glb" position={[-1, 0, -4]} rotation={[0, Math.PI / 2, 0]} scale={1.0} />
@@ -117,7 +111,7 @@ export function VillageDetails({ isWinter }) {
       <GlobeDetail modelPath="/models/ExtDecoration/hedge-corner.glb" position={[7, 0, -4.5]} rotation={[0, -Math.PI / 3, 0]} scale={1.0} />
       <GlobeDetail modelPath="/models/ExtDecoration/hedge.glb" position={[6, 0, 7]} rotation={[0, Math.PI, 0]} scale={1.1} />
 
-      {/* 🚩 BANDERAS decorativas */}
+      {/* 🚩 BANDERAS decorativas (A petición del usuario se queda) */}
       <GlobeDetail modelPath="/models/ExtDecoration/flag.glb" position={[0, 0, 0]} scale={1.3} />
     </group>
   )

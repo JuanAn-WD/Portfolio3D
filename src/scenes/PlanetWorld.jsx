@@ -17,6 +17,51 @@ import { VillageDetails } from '../components/VillageDetails'
 import { DayNightLighting } from '../components/DayNightLighting'
 
 // -------------------------------------------------------------
+// Radio de colisión (esfera) por tipo de decoración.
+// El radio base se multiplica por el scale del objeto en runtime.
+// Radio 0 → el elemento no bloquea al jugador.
+// -------------------------------------------------------------
+const DECO_HITBOX_RADIUS = {
+  'tree':         0.85,  // árbol grande
+  'pine':         0.70,  // pino mediano cónico
+  'pine-small':   0.45,  // pino pequeño
+  'rock':         0.60,  // roca
+  'hedge':        0.75,  // seto arbusto
+  'plant':        0.25,  // planta decorativa
+  'stones':       0.30,  // grupo de piedras
+  'mushrooms':    0,     // setas — demasiado pequeñas
+  'grass':        0,     // hierba — no bloquea
+  'flowers':      0,     // flores — no bloquea
+  'flowers-tall': 0,     // flores altas — delgadas, no bloquea
+  'detail':       0,     // detalles varios — no bloquea
+}
+
+// -------------------------------------------------------------
+// 💥 COLISIÓN EXACTA DE EDIFICIOS — Raycast sobre geometría real
+// -------------------------------------------------------------
+
+// Radio del personaje (unidades de mundo)
+const PLAYER_RADIUS = 0.65
+
+// El jugador siempre está en el origen del mundo
+const _RAY_ORIGIN = new THREE.Vector3(0, 0, 0)
+
+// 12 direcciones de rayo: anillo horizontal (8) + diagonales arriba (4)
+// Cubriendo así toda la geometría del edificio de manera omnidireccional
+const COLLISION_RAYS = (() => {
+  const dirs = []
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2
+    dirs.push(new THREE.Vector3(Math.cos(a), 0, Math.sin(a)).normalize())
+  }
+  dirs.push(new THREE.Vector3(1, 1, 0).normalize())
+  dirs.push(new THREE.Vector3(-1, 1, 0).normalize())
+  dirs.push(new THREE.Vector3(0, 1, 1).normalize())
+  dirs.push(new THREE.Vector3(0, 1, -1).normalize())
+  return dirs
+})()
+
+// -------------------------------------------------------------
 // 🌍 ESCENA 1: EL PLANETA INFINITO (Pueblo Interconectado)
 // -------------------------------------------------------------
 export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen }) {
@@ -24,6 +69,17 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen })
   // Referencias para colisiones
   const houseRef = useRef()
   const labRef = useRef()
+
+  // Pre-allocated vectors reutilizados en cada frame (evita GC pressure)
+  const _colP = useRef(new THREE.Vector3())
+  const _colOldHP = useRef(new THREE.Vector3())
+  const _colOldLP = useRef(new THREE.Vector3())
+  const _colPlayerGlobe = useRef(new THREE.Vector3())
+  // Raycaster con far=PLAYER_RADIUS — Three.js descarta automáticamente
+  // los triángulos más lejanos, haciendo cada test más rápido
+  const _raycaster = useRef(
+    new THREE.Raycaster(_RAY_ORIGIN.clone(), new THREE.Vector3(), 0, PLAYER_RADIUS)
+  )
 
   const playerVisualRef = useRef()
   const [, getKeys] = useKeyboardControls()
@@ -71,17 +127,25 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen })
       const lat = (Math.random() - 0.5) * Math.PI * 2
       const lon = (Math.random() - 0.5) * Math.PI * 2
 
-      // Filtramos objetos que spawnearían en el agua (por debajo de la costa en localY = 0.35)
+      // Filtramos objetos que spawnearían en el agua (por debajo de la costa)
       const localY = Math.cos(lat) * Math.cos(lon)
       if (localY < 0.38) continue
 
-      const dist = Math.sqrt(lat * lat + lon * lon)
+      // ZONA 0: Pueblo y Spawn (localY > 0.92)
+      // La altura local del spawn es 1.0. Esto crea un claro circular perfecto 
+      // alrededor del pueblo y las casas, independientemente del wrap-around matemático.
+      if (localY > 0.90) {
+        // En el pueblo mismo, solo algunas briznas de hierba ocasionales
+        if (Math.random() > 0.15) continue
+        
+        const type = Math.random() > 0.5 ? 'grass' : 'flowers'
+        const scaleBase = 0.5 + Math.random() * 0.5
+        items.push({ id: i, lat, lon, type, scale: scaleBase, rotY: Math.random() * Math.PI * 2 })
+        continue
+      }
 
-      // Only exclude a small radius around the exact building positions
-      if (Math.abs(lat) < 0.3 && Math.abs(lon) < 0.3) continue
-
-      // In the intermediate zone (0.3-0.7) use more varied, smaller decorations
-      const isIntermediate = dist < 0.7
+      // ZONA 1: Zona intermedia / Afueras del pueblo (0.75 < localY <= 0.90)
+      const isIntermediate = localY > 0.75
       const rand = Math.random()
       let type
       if (isIntermediate) {
@@ -112,6 +176,27 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen })
     return items
   }, [])
 
+  /**
+   * Hitbox de esfera por elemento de decoración.
+   * Cada tipo tiene su propio radio base en DECO_HITBOX_RADIUS;
+   * el radio final escala con el tamaño del modelo (deco.scale).
+   * Posición pre-calculada en espacio local del globo:
+   *   pos = Rz(lon) * Rx(lat) * [0, 50, 0]
+   */
+  const blockingDecos = useMemo(() => {
+    return decorations
+      .filter(d => (DECO_HITBOX_RADIUS[d.type] ?? 0) > 0)
+      .map(d => {
+        const pos = new THREE.Vector3(0, 50, 0)
+        pos.applyEuler(new THREE.Euler(d.lat, 0, d.lon, 'XYZ'))
+        
+        return {
+          pos,
+          radius: d.scale * DECO_HITBOX_RADIUS[d.type],
+        }
+      })
+  }, [decorations])
+
   useFrame((state, delta) => {
     if (isFrozen) return
 
@@ -126,8 +211,8 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen })
         if (amount === 0) return
 
         // Guardamos las posiciones previas de los edificios
-        let oldHP = new THREE.Vector3(); if (houseRef.current) houseRef.current.getWorldPosition(oldHP)
-        let oldLP = new THREE.Vector3(); if (labRef.current) labRef.current.getWorldPosition(oldLP)
+        if (houseRef.current) houseRef.current.getWorldPosition(_colOldHP.current)
+        if (labRef.current) labRef.current.getWorldPosition(_colOldLP.current)
 
         const prevQ = globeRef.current.quaternion.clone()
         const axis = new THREE.Vector3(ax, 0, az).normalize()
@@ -137,10 +222,8 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen })
         globeRef.current.updateMatrixWorld(true)
 
         // 🌊 COLISIÓN CON EL BORDE DEL AGUA
-        // Calculamos la posición del jugador (0,0,0) en el espacio local del globo.
-        // Si la altura normalizada baja de 0.38 (el shader dibuja agua en < 0.35), bloqueamos.
-        // Esto evita el bug de la acumulación de rotación por caminar en círculos.
-        const playerLocalPos = new THREE.Vector3(0, 0, 0)
+        const playerLocalPos = _colPlayerGlobe.current
+        playerLocalPos.set(0, 0, 0)
         globeRef.current.worldToLocal(playerLocalPos)
         if (playerLocalPos.y / 50 < 0.38) {
           globeRef.current.quaternion.copy(prevQ)
@@ -149,21 +232,40 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen })
         }
 
         let hit = false
-        const p = new THREE.Vector3()
 
-        const checkHitbox = (ref, oldPos, width, depth, offsetX = 0, offsetZ = 0) => {
+        // 🏠 COLISIÓN EXACTA DE EDIFICIOS — Raycast sobre geometría real del GLB
+        // Broad phase: si el edificio está a más de 9 unidades, no hacemos nada.
+        // Narrow phase: 12 rayos desde el origen del mundo en todas las direcciones;
+        //   si alguno impacta geometría del edificio dentro de PLAYER_RADIUS → colisión.
+        const checkBuildingRaycast = (ref, oldPos) => {
           if (!ref.current) return false
-          const playerPos = new THREE.Vector3(0, 0, 0)
-          ref.current.worldToLocal(playerPos)
-          playerPos.x -= offsetX; playerPos.z -= offsetZ
-          const isInside = Math.abs(playerPos.x) < width && Math.abs(playerPos.z) < depth
-          ref.current.getWorldPosition(p)
-          return isInside && Math.hypot(p.x, p.z) < Math.hypot(oldPos.x, oldPos.z)
+          // --- Broad phase (barato) ---
+          ref.current.getWorldPosition(_colP.current)
+          if (_colP.current.length() > 9) return false
+          const oldDist = oldPos.length()
+          const newDist = _colP.current.length()
+          // --- Narrow phase: raycasting exacto sobre los triángulos del modelo ---
+          for (const dir of COLLISION_RAYS) {
+            _raycaster.current.set(_RAY_ORIGIN, dir)
+            const hits = _raycaster.current.intersectObject(ref.current, true)
+            if (hits.length > 0) {
+              // Solo bloquear si el edificio se está acercando (player se mueve hacia él)
+              return newDist < oldDist
+            }
+          }
+          return false
         }
 
-        // Chequeos de colisión para los 2 edificios
-        if (checkHitbox(houseRef, oldHP, 3.2, 3.0, 0, -0.4)) hit = true
-        if (!hit && checkHitbox(labRef, oldLP, 3.0, 2.0, 0, -1.2)) hit = true
+        // Reutilizamos _colPlayerGlobe para la comprobación vs decoraciones
+        // (ya tiene la posición actualizada del jugador en espacio del globo)
+        for (const deco of blockingDecos) {
+          if (!hit && playerLocalPos.distanceTo(deco.pos) < deco.radius) {
+            hit = true
+          }
+        }
+
+        if (!hit && checkBuildingRaycast(houseRef, _colOldHP.current)) hit = true
+        if (!hit && checkBuildingRaycast(labRef, _colOldLP.current)) hit = true
 
         if (hit) {
           globeRef.current.quaternion.copy(prevQ)
@@ -193,6 +295,7 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen })
       {/* 👤 PERSONAJE */}
       <group ref={playerVisualRef} position={[0, 0, 0]}>
         <Juanan animationName={anim} scale={0.8} />
+
       </group>
 
       <group ref={globeRef} position={[0, -50, 0]}>
@@ -205,7 +308,9 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen })
         <Ocean radius={50} isWinter={isWinter} />
 
         {/* ☁️ NUBES (dentro del globo para que roten con el planeta) */}
-        <Clouds count={20} isWinter={isWinter} />
+        <Clouds count={25} />
+
+
 
         {/* 🛣️ CAMINOS QUE CONECTAN EL PUEBLO */}
         <GlobePath start={[0, 0]} end={[-5, -7]} steps={8} isWinter={isWinter} />
@@ -263,12 +368,12 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen })
           ref={labRef}
           modelPath="/models/Edifices/building-e.glb"
           position={[8, -0.1, -4]}
-          rotation={[0, -Math.PI / 3, 0]}
+          rotation={[0, -Math.PI / 0.75, 0]}
           scale={3}
           popupTitle="🧪 Laboratorio"
           popupHeight={6.5}
           interactDistance={4.5}
-          chimney={{ path: "/models/Edifices/chimney-medium.glb", position: [1.0, 1, -0.8], scale: 1.0 }}
+          chimney={{ path: "/models/Edifices/chimney-medium.glb", position: [1.0, 1, -0.6], scale: 1.0 }}
           interactData={{ title: "Laboratorio de Proyectos", description: "Aquí experimento con nuevas tecnologías, arquitecturas cloud y frameworks de UI.", tags: ["React", "Three.js"], link: "https://github.com" }}
           setTooltip={setTooltip}
           onEnter={onOpenModal}
@@ -301,9 +406,6 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen })
         {/* 🐦 VOLADORES — parrots surcando el cielo del pueblo */}
         <GlobePet modelPath="/models/Animals/animal-parrot.glb" position={[6, 0, -6]} scale={0.3} speed={0.7} flyHeight={2.2} />
         <GlobePet modelPath="/models/Animals/animal-parrot.glb" position={[-9, 0, 9]} scale={0.3} speed={0.65} flyHeight={2.5} />
-
-        {/* 🦋 MARIPOSAS */}
-        <Butterflies count={16} isWinter={isWinter} />
 
         {/* ✨ LUCIÉRNAGAS */}
         <Fireflies count={40} isWinter={isWinter} />

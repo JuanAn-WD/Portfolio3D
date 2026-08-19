@@ -2,6 +2,8 @@ import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
+const BUTTERFLY_COLORS = ['#f472b6', '#a78bfa', '#fbbf24', '#fb923c', '#34d399', '#60a5fa']
+
 /**
  * A single butterfly with flapping wing geometry.
  */
@@ -82,8 +84,6 @@ function Butterfly({ startPos, color, speed, area }) {
  * Concentrated more densely near the village but also found in the forests.
  */
 export function Butterflies({ count = 16, isWinter = false }) {
-  const colors = ['#f472b6', '#a78bfa', '#fbbf24', '#fb923c', '#34d399', '#60a5fa']
-
   const butterflies = useMemo(() => {
     if (isWinter) return []
     return Array.from({ length: count }, (_, i) => {
@@ -96,14 +96,14 @@ export function Butterflies({ count = 16, isWinter = false }) {
         id: i,
         lat,
         lon,
-        color: colors[i % colors.length],
+        color: BUTTERFLY_COLORS[i % BUTTERFLY_COLORS.length],
         speed: 1.5 + Math.random() * 1.5,
         area: 2 + Math.random() * 2,
       }
     })
   }, [count, isWinter])
 
-  if (isWinter) return null
+  if (butterflies.length === 0) return null
 
   return (
     <group>
