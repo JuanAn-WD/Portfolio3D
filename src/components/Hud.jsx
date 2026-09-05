@@ -1,8 +1,8 @@
-import { useState } from 'react'
 import { profile } from '../config/content'
+import { useTouchUi } from '../helpers/useTouchUi'
 
 export function Hud({ onDismiss, visible }) {
-  const [touch] = useState(() => window.matchMedia('(pointer: coarse)').matches)
+  const touch = useTouchUi()
 
   if (!visible) return null
 
@@ -16,7 +16,7 @@ export function Hud({ onDismiss, visible }) {
       <ul className="hud-keys">
         {touch ? (
           <>
-            <li>Stick izquierdo para mover</li>
+            <li>Cruzeta inferior izquierda para mover</li>
             <li>Acércate a un edificio y pulsa Interactuar</li>
           </>
         ) : (

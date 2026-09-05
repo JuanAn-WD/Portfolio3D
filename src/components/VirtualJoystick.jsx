@@ -1,8 +1,8 @@
 import { useRef } from 'react'
 import { useMovement } from '../context/MovementContext'
 
-const SIZE = 112
-const KNOB = 44
+const SIZE = 148
+const KNOB = 46
 const MAX = (SIZE - KNOB) / 2
 
 export function VirtualJoystick() {
@@ -34,16 +34,15 @@ export function VirtualJoystick() {
     if (knobRef.current) {
       knobRef.current.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`
     }
-    const nx = dx / MAX
-    const nz = dy / MAX
-    setStick(nx, nz)
+    setStick(dx / MAX, dy / MAX)
   }
 
   return (
     <div
-      className="joystick"
+      className="dpad"
       ref={baseRef}
       onPointerDown={(e) => {
+        e.preventDefault()
         e.currentTarget.setPointerCapture(e.pointerId)
         pointerId.current = e.pointerId
         moveTo(e.clientX, e.clientY)
@@ -56,7 +55,13 @@ export function VirtualJoystick() {
       onPointerCancel={reset}
       aria-hidden="true"
     >
-      <div className="joystick-knob" ref={knobRef} />
+      <div className="dpad-arm dpad-arm-v" />
+      <div className="dpad-arm dpad-arm-h" />
+      <span className="dpad-dir dpad-dir-up" />
+      <span className="dpad-dir dpad-dir-down" />
+      <span className="dpad-dir dpad-dir-left" />
+      <span className="dpad-dir dpad-dir-right" />
+      <div className="dpad-knob" ref={knobRef} />
     </div>
   )
 }

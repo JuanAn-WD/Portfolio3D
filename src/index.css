@@ -162,29 +162,106 @@ html, body, #root {
   font-family: inherit;
 }
 
-.joystick {
+.dpad {
   position: absolute;
-  left: 24px;
-  bottom: 24px;
-  width: 112px;
-  height: 112px;
-  border-radius: 50%;
-  background: rgba(15, 23, 42, 0.45);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  z-index: 45;
+  left: max(12px, env(safe-area-inset-left, 0px));
+  bottom: max(18px, env(safe-area-inset-bottom, 0px));
+  width: 148px;
+  height: 148px;
+  z-index: 55;
   touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.45));
 }
 
-.joystick-knob {
+.dpad-arm {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: rgba(96, 165, 250, 0.9);
+  background: rgba(15, 23, 42, 0.82);
+  border: 2px solid rgba(147, 197, 253, 0.55);
   transform: translate(-50%, -50%);
   pointer-events: none;
+}
+
+.dpad-arm-v {
+  width: 52px;
+  height: 148px;
+  border-radius: 14px;
+}
+
+.dpad-arm-h {
+  width: 148px;
+  height: 52px;
+  border-radius: 14px;
+}
+
+.dpad-dir {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  border: 8px solid transparent;
+  opacity: 0.85;
+}
+
+.dpad-dir-up {
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-bottom-color: #93c5fd;
+  border-top-width: 0;
+}
+
+.dpad-dir-down {
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-top-color: #93c5fd;
+  border-bottom-width: 0;
+}
+
+.dpad-dir-left {
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-right-color: #93c5fd;
+  border-left-width: 0;
+}
+
+.dpad-dir-right {
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left-color: #93c5fd;
+  border-right-width: 0;
+}
+
+.dpad-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #60a5fa;
+  border: 3px solid #dbeafe;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.35);
+}
+
+@media (max-width: 900px) {
+  .hud {
+    max-width: min(280px, calc(100vw - 24px));
+  }
+
+  .tooltip {
+    bottom: 180px;
+    max-width: calc(100vw - 32px);
+    text-align: center;
+  }
 }
 
 .modal-backdrop {

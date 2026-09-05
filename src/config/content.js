@@ -95,24 +95,41 @@ export const fauna = [
   { modelPath: '/models/Animals/animal-parrot.glb', position: [-9, 0, 9], scale: 0.3, speed: 0.65, flyHeight: 2.5 },
 ]
 
+const F = 2.4
+
 export const interiorFurniture = [
-  { path: '/models/InteriorHouse/rugRectangle.glb', position: [-3.5, 0.02, -3.5], rotation: [0, 0, 0], scale: 2.5 },
-  { path: '/models/InteriorHouse/rugRound.glb', position: [2.5, 0.02, 2.5], rotation: [0, 0, 0], scale: 2.5 },
-  { path: '/models/InteriorHouse/desk.glb', position: [-4.8, 0, -3.5], rotation: [0, Math.PI / 2, 0], scale: 2.2, collider: { args: [0.45, 0.75, 1.5], offset: [0, 0.75, 0] } },
-  { path: '/models/InteriorHouse/computerScreen.glb', position: [-4.8, 1.63, -4.5], rotation: [0, Math.PI / 2 - Math.PI / 8, 0], scale: 1.9 },
-  { path: '/models/InteriorHouse/computerScreen.glb', position: [-4.8, 1.63, -3.5], rotation: [0, Math.PI / 2, 0], scale: 1.9 },
-  { path: '/models/InteriorHouse/computerScreen.glb', position: [-4.8, 1.63, -2.5], rotation: [0, Math.PI / 2 + Math.PI / 8, 0], scale: 1.9 },
-  { path: '/models/InteriorHouse/computerKeyboard.glb', position: [-4.2, 1.63, -3.5], rotation: [0, Math.PI / 2, 0], scale: 1.9 },
-  { path: '/models/InteriorHouse/chairDesk.glb', position: [-3.0, 0, -3.5], rotation: [0, -Math.PI / 2, 0], scale: 2.2, collider: { args: [0.45, 0.7, 0.45], offset: [0, 0.7, 0] } },
-  { path: '/models/InteriorHouse/bookcaseOpen.glb', position: [-4.0, 0, -5.2], rotation: [0, 0, 0], scale: 2.2, collider: { args: [0.4, 1.1, 0.7], offset: [0, 1.1, 0] } },
-  { path: '/models/InteriorHouse/bookcaseClosed.glb', position: [-2.0, 0, -5.2], rotation: [0, 0, 0], scale: 2.2, collider: { args: [0.4, 1.1, 0.7], offset: [0, 1.1, 0] } },
-  { path: '/models/InteriorHouse/bedDouble.glb', position: [3.5, 0, -4.0], rotation: [0, 0, 0], scale: 2.2, collider: { args: [1.1, 0.45, 1.5], offset: [0, 0.45, 0] } },
-  { path: '/models/InteriorHouse/sideTableDrawers.glb', position: [1.2, 0, -4.8], rotation: [0, 0, 0], scale: 2.2, collider: { args: [0.35, 0.5, 0.35], offset: [0, 0.5, 0] } },
-  { path: '/models/InteriorHouse/lampRoundTable.glb', position: [1.2, 1.1, -4.8], rotation: [0, 0, 0], scale: 1.9 },
-  { path: '/models/InteriorHouse/loungeSofaCorner.glb', position: [4.0, 0, 4.0], rotation: [0, Math.PI, 0], scale: 2.2, collider: { args: [1.4, 0.55, 1.4], offset: [0, 0.55, 0] } },
-  { path: '/models/InteriorHouse/tableCoffee.glb', position: [2.0, 0, 2.0], rotation: [0, 0, 0], scale: 2.2, collider: { args: [0.7, 0.35, 0.7], offset: [0, 0.35, 0] } },
-  { path: '/models/InteriorHouse/cabinetTelevision.glb', position: [-0.5, 0, 2.5], rotation: [0, Math.PI / 2, 0], scale: 2.2, collider: { args: [0.4, 0.5, 0.8], offset: [0, 0.5, 0] } },
-  { path: '/models/InteriorHouse/televisionModern.glb', position: [-0.5, 0.95, 2.5], rotation: [0, 0, 0], scale: 2.2 },
-  { path: '/models/InteriorHouse/pottedPlant.glb', position: [-4.5, 0, 4.5], rotation: [0, 0, 0], scale: 2.6, collider: { args: [0.3, 0.6, 0.3], offset: [0, 0.6, 0] } },
-  { path: '/models/InteriorHouse/lampRoundFloor.glb', position: [0.0, 0, -5.0], rotation: [0, 0, 0], scale: 2.2, collider: { args: [0.2, 0.9, 0.2], offset: [0, 0.9, 0] } },
+  { path: '/models/InteriorHouse/rugRectangle.glb', position: [-4.2, 0.012, -3.35], rotation: [0, Math.PI / 2, 0], scale: F },
+  { path: '/models/InteriorHouse/rugRound.glb', position: [3.5, 0.012, 3.15], rotation: [0, 0, 0], scale: F },
+  { path: '/models/InteriorHouse/rugDoormat.glb', position: [0, 0.012, 5.38], rotation: [0, Math.PI, 0], scale: 2.8 },
+
+  { path: '/models/InteriorHouse/desk.glb', position: [-5.28, 0, -3.35], rotation: [0, Math.PI / 2, 0], scale: F, collider: { args: [0.88, 0.46, 0.47], offset: [0, 0.46, 0] } },
+  { path: '/models/InteriorHouse/computerScreen.glb', position: [-5.52, 0.93, -3.88], rotation: [0, Math.PI / 2, 0], scale: 2.2 },
+  { path: '/models/InteriorHouse/computerScreen.glb', position: [-5.52, 0.93, -2.88], rotation: [0, Math.PI / 2, 0], scale: 2.2 },
+  { path: '/models/InteriorHouse/computerKeyboard.glb', position: [-5.12, 0.93, -3.35], rotation: [0, Math.PI / 2, 0], scale: 2.2 },
+  { path: '/models/InteriorHouse/computerMouse.glb', position: [-5.08, 0.93, -2.72], rotation: [0, Math.PI / 2, 0], scale: 2.2 },
+  { path: '/models/InteriorHouse/chairDesk.glb', position: [-4.2, 0, -3.35], rotation: [0, -Math.PI / 2, 0], scale: F, collider: { args: [0.4, 0.73, 0.38], offset: [0, 0.73, 0] } },
+
+  { path: '/models/InteriorHouse/bookcaseOpen.glb', position: [-3.55, 0, -5.58], rotation: [0, 0, 0], scale: F, collider: { args: [0.48, 1.06, 0.3], offset: [0, 1.06, 0] } },
+  { path: '/models/InteriorHouse/bookcaseClosed.glb', position: [-2.35, 0, -5.58], rotation: [0, 0, 0], scale: F, collider: { args: [0.48, 1.02, 0.3], offset: [0, 1.02, 0] } },
+  { path: '/models/InteriorHouse/lampRoundFloor.glb', position: [-1.25, 0, -5.52], rotation: [0, 0.4, 0], scale: F, collider: { args: [0.18, 1.03, 0.21], offset: [0, 1.03, 0] } },
+
+  { path: '/models/InteriorHouse/bedDouble.glb', position: [4.62, 0, -3.5], rotation: [0, 0, 0], scale: F, collider: { args: [1.15, 0.45, 1.35], offset: [0, 0.45, 0] } },
+  { path: '/models/InteriorHouse/sideTableDrawers.glb', position: [3.15, 0, -5.28], rotation: [0, Math.PI / 2, 0], scale: F, collider: { args: [0.64, 0.46, 0.27], offset: [0, 0.46, 0] } },
+  { path: '/models/InteriorHouse/lampRoundTable.glb', position: [3.15, 0.93, -5.28], rotation: [0, 0, 0], scale: 2.2 },
+  { path: '/models/InteriorHouse/pillow.glb', position: [4.28, 0.9, -4.55], rotation: [0, 0.12, 0], scale: 2.2 },
+  { path: '/models/InteriorHouse/pillowBlue.glb', position: [4.92, 0.9, -4.52], rotation: [0, -0.08, 0], scale: 2.2 },
+
+  { path: '/models/InteriorHouse/loungeSofaLong.glb', position: [4.82, 0, 3.15], rotation: [0, -Math.PI / 2, 0], scale: F, collider: { args: [1.18, 0.55, 0.98], offset: [0, 0.55, 0] } },
+  { path: '/models/InteriorHouse/tableCoffee.glb', position: [3.28, 0, 3.15], rotation: [0, -Math.PI / 2, 0], scale: F, collider: { args: [0.79, 0.28, 0.48], offset: [0, 0.28, 0] } },
+  { path: '/models/InteriorHouse/cabinetTelevision.glb', position: [1.45, 0, 3.15], rotation: [0, Math.PI / 2, 0], scale: F, collider: { args: [0.96, 0.37, 0.3], offset: [0, 0.37, 0] } },
+  { path: '/models/InteriorHouse/televisionModern.glb', position: [1.45, 0.76, 3.15], rotation: [0, Math.PI / 2, 0], scale: F },
+
+  { path: '/models/InteriorHouse/pottedPlant.glb', position: [-5.35, 0, 4.9], rotation: [0, 0.3, 0], scale: 2.6, collider: { args: [0.28, 0.78, 0.31], offset: [0, 0.78, 0] } },
+  { path: '/models/InteriorHouse/coatRackStanding.glb', position: [-2.2, 0, 5.35], rotation: [0, 0.2, 0], scale: 2.5, collider: { args: [0.2, 0.96, 0.2], offset: [0, 0.96, 0] } },
+  { path: '/models/InteriorHouse/loungeChair.glb', position: [-4.45, 0, 2.25], rotation: [0, Math.PI * 0.65, 0], scale: F, collider: { args: [0.59, 0.55, 0.49], offset: [0, 0.55, 0] } },
+  { path: '/models/InteriorHouse/sideTable.glb', position: [-5.3, 0, 1.55], rotation: [0, Math.PI / 2, 0], scale: 2.2, collider: { args: [0.59, 0.42, 0.24], offset: [0, 0.42, 0] } },
+  { path: '/models/InteriorHouse/laptop.glb', position: [-5.3, 0.86, 1.55], rotation: [0, Math.PI / 2, 0], scale: 1.9 },
+  { path: '/models/InteriorHouse/speaker.glb', position: [1.45, 0, 4.28], rotation: [0, Math.PI / 2, 0], scale: 2, collider: { args: [0.15, 0.64, 0.15], offset: [0, 0.64, 0] } },
+  { path: '/models/InteriorHouse/trashcan.glb', position: [5.38, 0, 5.38], rotation: [0, 0.4, 0], scale: 2.2, collider: { args: [0.23, 0.47, 0.26], offset: [0, 0.47, 0] } },
 ]
+

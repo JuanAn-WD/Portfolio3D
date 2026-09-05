@@ -13,6 +13,7 @@ import { LoaderScreen } from './components/LoaderScreen'
 import { Hud } from './components/Hud'
 import { VirtualJoystick } from './components/VirtualJoystick'
 import { usePrefersReducedMotion } from './helpers/usePrefersReducedMotion'
+import { useTouchUi } from './helpers/useTouchUi'
 
 preloadUsedModels()
 
@@ -38,7 +39,7 @@ export default function App() {
   const [tooltip, setTooltip] = useState(null)
   const [modalData, setModalData] = useState(null)
   const [hudOpen, setHudOpen] = useState(() => sessionStorage.getItem('hud-hidden') !== '1')
-  const [isCoarse] = useState(() => window.matchMedia('(pointer: coarse)').matches)
+  const isCoarse = useTouchUi()
   const globeQuatRef = useRef(new THREE.Quaternion())
   const closeBtnRef = useRef(null)
   const reducedMotion = usePrefersReducedMotion()
