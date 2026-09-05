@@ -49,15 +49,12 @@ function StreetLamp({ position = [0, 0, 0] }) {
 export function VillageDetails({ isWinter }) {
   return (
     <group>
-      {/* 🏮 FAROLAS procedurales a lo largo de los caminos con luz cálida */}
       <StreetLamp position={[-2, 0, -3]} />
       <StreetLamp position={[-4, 0, -5.5]} />
       <StreetLamp position={[3, 0, -1]} />
       <StreetLamp position={[6, 0, -2]} />
-      <StreetLamp position={[2, 0, 4]} />
-      <StreetLamp position={[4, 0, 7]} />
+      <StreetLamp position={[3, 0, 6]} />
 
-      {/* 🛒 ATREZZO adicional del mercado */}
       <GlobeDetail modelPath="/models/ExtDecoration/crate.glb" position={[6.5, 0, 8]} scale={0.9} />
       <GlobeDetail modelPath="/models/ExtDecoration/barrel.glb" position={[3.8, 0, 9]} scale={1.0} />
       <GlobeDetail modelPath="/models/ExtDecoration/crate-item.glb" position={[6, 0, 9.5]} scale={0.8} />
@@ -67,20 +64,17 @@ export function VillageDetails({ isWinter }) {
       <GlobeDetail modelPath="/models/ExtDecoration/barrel.glb" position={[-5.5, 0, -6]} scale={1.1} />
       <GlobeDetail modelPath="/models/ExtDecoration/pipe.glb" position={[-6.5, 0, -7]} rotation={[0, Math.PI / 2, 0]} scale={0.8} />
 
-      {/* 🌿 HIERBAS y FLORES cerca de los caminos */}
       <GlobeDetail modelPath="/models/ExtDecoration/grass.glb" position={[1, 0, -2]} scale={1.2} />
       <GlobeDetail modelPath="/models/ExtDecoration/grass.glb" position={[-1, 0, 2]} scale={1.0} />
       <GlobeDetail modelPath="/models/ExtDecoration/grass.glb" position={[4, 0, -3]} scale={0.9} />
-      <GlobeDetail modelPath={isWinter ? "/models/ExtDecoration/grass.glb" : "/models/ExtDecoration/flowers.glb"} position={[0, 0, 1]} scale={1.1} />
-      <GlobeDetail modelPath={isWinter ? "/models/ExtDecoration/grass.glb" : "/models/ExtDecoration/flowers.glb"} position={[-2, 0, -1]} scale={0.9} />
-      <GlobeDetail modelPath={isWinter ? "/models/ExtDecoration/grass.glb" : "/models/ExtDecoration/flowers-tall.glb"} position={[2, 0, -1]} scale={1.0} />
+      <GlobeDetail modelPath={isWinter ? '/models/ExtDecoration/grass.glb' : '/models/ExtDecoration/flowers.glb'} position={[0, 0, 1]} scale={1.1} />
+      <GlobeDetail modelPath={isWinter ? '/models/ExtDecoration/grass.glb' : '/models/ExtDecoration/flowers.glb'} position={[-2, 0, -1]} scale={0.9} />
+      <GlobeDetail modelPath={isWinter ? '/models/ExtDecoration/grass.glb' : '/models/ExtDecoration/flowers-tall.glb'} position={[2, 0, -1]} scale={1.0} />
 
-      {/* 🍄 SETAS y PLANTAS */}
       <GlobeDetail modelPath="/models/ExtDecoration/mushrooms.glb" position={[1, 0, 5]} scale={0.8} />
       <GlobeDetail modelPath="/models/ExtDecoration/plant.glb" position={[-4, 0, -3]} scale={1.0} />
       <GlobeDetail modelPath="/models/ExtDecoration/plant.glb" position={[7, 0, 3]} scale={0.9} />
 
-      {/* 🚩 BANDERA decorativa */}
       <GlobeDetail modelPath="/models/ExtDecoration/flag.glb" position={[2.2, 0, 1.6]} scale={1.3} />
     </group>
   )

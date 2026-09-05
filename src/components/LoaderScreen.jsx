@@ -1,8 +1,17 @@
+import { useEffect, useState } from 'react'
 import { useProgress } from '@react-three/drei'
 
 export function LoaderScreen() {
   const { active, progress, loaded, total } = useProgress()
-  if (!active && progress >= 100) return null
+  const [done, setDone] = useState(false)
+
+  useEffect(() => {
+    if (!active && progress >= 100) setDone(true)
+  }, [active, progress])
+
+  // Hide only after a completed load; keep visible between asset batches
+  if (done) return null
+  if (!active && total === 0) return null
 
   const pct = Math.min(100, Math.round(progress || 0))
   return (

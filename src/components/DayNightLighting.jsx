@@ -4,7 +4,7 @@ import * as THREE from 'three'
 
 const _bg = new THREE.Color()
 
-export function DayNightLighting({ cycleDuration = 90, isWinter = false, reducedMotion = false }) {
+export function DayNightLighting({ cycleDuration = 90, isWinter = false, reducedMotion = false, active = true }) {
   const dirLightRef = useRef()
   const ambientRef = useRef()
 
@@ -20,6 +20,7 @@ export function DayNightLighting({ cycleDuration = 90, isWinter = false, reduced
   const ambientIntensities = isWinter ? [0.5, 0.7, 0.5, 0.25] : [0.5, 0.7, 0.4, 0.15]
 
   useFrame((state) => {
+    if (!active) return
     const t = reducedMotion ? 0.28 : (state.clock.elapsedTime % cycleDuration) / cycleDuration
     const phase = t * 4
     const idx = Math.floor(phase) % 4
@@ -50,7 +51,7 @@ export function DayNightLighting({ cycleDuration = 90, isWinter = false, reduced
         position={[14, 22, 10]}
         intensity={1.8}
         color="#fffbeb"
-        castShadow
+        castShadow={active}
         shadow-mapSize={[1024, 1024]}
         shadow-camera-far={80}
         shadow-camera-left={-15}

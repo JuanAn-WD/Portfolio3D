@@ -12,6 +12,7 @@ export function Hud({ onDismiss, visible }) {
         <strong>{profile.name}</strong>
         <span>{profile.role}</span>
       </div>
+      <p className="hud-summary">{profile.summary}</p>
       <ul className="hud-keys">
         {touch ? (
           <>

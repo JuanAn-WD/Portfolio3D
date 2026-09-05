@@ -67,19 +67,29 @@ function CloudPuff({ startLat, startLon, orbitSpeed, scale, heightAboveSurface }
 /**
  * A collection of clouds distributed across the globe surface.
  */
-export function Clouds({ count = 20, isWinter = false }) {
+export function Clouds({ count = 16, isWinter = false }) {
   const clouds = useMemo(() => {
-    return Array.from({ length: count }, (_, i) => ({
-      id: i,
-      startLat: (Math.random() - 0.5) * 1.8,  // spread across many latitudes
-      startLon: (Math.random() - 0.5) * Math.PI * 2,
-      orbitSpeed: 0.02 + Math.random() * 0.03,
-      scale: 0.8 + Math.random() * 1.4,
-      heightAboveSurface: 1.5 + Math.random() * 4,  // float above the ground
-    }))
+    const list = []
+    let i = 0
+    let attempts = 0
+    while (list.length < count && attempts < count * 20) {
+      attempts += 1
+      const startLat = (Math.random() - 0.5) * 1.8
+      const startLon = (Math.random() - 0.5) * Math.PI * 2
+      // Keep village/spawn sky clear so clouds don't sit in the camera frustum
+      if (Math.abs(startLat) < 0.35 && Math.abs(startLon) < 0.55) continue
+      list.push({
+        id: i++,
+        startLat,
+        startLon,
+        orbitSpeed: 0.02 + Math.random() * 0.03,
+        scale: 0.8 + Math.random() * 1.2,
+        heightAboveSurface: 3.5 + Math.random() * 5,
+      })
+    }
+    return list
   }, [count])
 
-  // Estimamos el máximo de esferas (20 nubes * 7 esferas máx = 140)
   const maxInstances = count * 7
 
   return (
@@ -91,6 +101,7 @@ export function Clouds({ count = 20, isWinter = false }) {
           transparent
           opacity={0.7}
           roughness={1}
+          depthWrite={false}
         />
         {clouds.map((cloud) => (
           <CloudPuff key={cloud.id} {...cloud} />

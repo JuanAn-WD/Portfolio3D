@@ -30,7 +30,7 @@ const _prevQ = new THREE.Quaternion()
 const _camGoal = new THREE.Vector3(0, 3.5, 6.5)
 const _hitP = new THREE.Vector3()
 
-export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, globeQuatRef }) {
+export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, globeQuatRef, active = true }) {
   const globeRef = useRef()
   const buildingRefs = useRef({})
   const oldBuildingPos = useRef({})
@@ -81,8 +81,12 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, g
   }, [globeQuatRef])
 
   const handleEnter = (data) => {
-    if (data.action === 'enterHouse') onEnterHouse()
-    else if (data.action === 'openProject' && data.projectId) onOpenModal(projects[data.projectId])
+    if (data.action === 'enterHouse') {
+      setTooltip(null)
+      onEnterHouse()
+    } else if (data.action === 'openProject' && data.projectId) {
+      onOpenModal(projects[data.projectId])
+    }
   }
 
   useFrame((state, delta) => {
@@ -90,7 +94,7 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, g
       globeQuatRef.current.copy(globeRef.current.quaternion)
     }
     const d = Math.min(delta, 0.05)
-    if (isFrozen) return
+    if (isFrozen || !active) return
 
     const keys = getKeys()
     let tx = axes.x
@@ -176,7 +180,12 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, g
 
   return (
     <>
-      <DayNightLighting cycleDuration={90} isWinter={isWinter} reducedMotion={reducedMotion} />
+      <DayNightLighting
+        cycleDuration={90}
+        isWinter={isWinter}
+        reducedMotion={reducedMotion}
+        active={active}
+      />
 
       <group ref={playerVisualRef} position={[0, 0, 0]}>
         <Juanan animationName={anim} scale={0.8} />

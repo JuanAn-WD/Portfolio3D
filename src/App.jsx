@@ -94,15 +94,18 @@ export default function App() {
             >
               <AdaptiveDpr />
               <Suspense fallback={null}>
-                {sceneMode === 'island' ? (
+                {/* Keep the planet mounted so rotation / assets survive house trips */}
+                <group visible={sceneMode === 'island'}>
                   <PlanetWorld
-                    isFrozen={frozen}
+                    active={sceneMode === 'island'}
+                    isFrozen={frozen || sceneMode !== 'island'}
                     globeQuatRef={globeQuatRef}
                     onEnterHouse={() => switchScene('interior')}
                     onOpenModal={setModalData}
                     setTooltip={setTooltip}
                   />
-                ) : (
+                </group>
+                {sceneMode === 'interior' && (
                   <InteriorWorld
                     isFrozen={frozen}
                     onExitHouse={() => switchScene('island')}

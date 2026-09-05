@@ -27,6 +27,13 @@ npm run dev
 npm run build
 ```
 
+Para listar (o borrar) modelos GLB que el código no referencia:
+
+```bash
+node scripts/find-unused-models.mjs
+node scripts/find-unused-models.mjs --delete
+```
+
 ## Stack
 
 React 19, Three.js, @react-three/fiber, drei, Rapier, Vite. Modelos low-poly de [Kenney](https://kenney.nl) (CC0).
@@ -42,4 +49,6 @@ src/
   scenes/PlanetWorld.jsx
   scenes/InteriorWorld.jsx
   components/
+scripts/
+  find-unused-models.mjs  # Poda del pack Kenney
 ```

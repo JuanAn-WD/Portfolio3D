@@ -96,7 +96,7 @@ html, body, #root {
   padding: 14px 16px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  max-width: 240px;
+  max-width: 280px;
 }
 
 .hud-brand {
@@ -109,6 +109,13 @@ html, body, #root {
 .hud-brand span {
   color: #93c5fd;
   font-size: 13px;
+}
+
+.hud-summary {
+  margin: 0 0 10px;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .hud-keys {
