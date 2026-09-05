@@ -1,4 +1,4 @@
-import { useRef, useMemo } from 'react'
+import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
@@ -7,27 +7,28 @@ import * as THREE from 'three'
  * Uses a custom shader for wave animation with translucent water effect.
  * Renders only on parts of the sphere that don't have land (below a certain latitude threshold).
  */
-export function Ocean({ radius = 50, isWinter = false }) {
+export function Ocean({ radius = 50, isWinter = false, reducedMotion = false }) {
   const meshRef = useRef()
 
-  const uniforms = useMemo(() => ({
+  const uniforms = useRef({
     uTime: { value: 0 },
     uColor1: { value: new THREE.Color(isWinter ? '#94a3b8' : '#0ea5e9') },
     uColor2: { value: new THREE.Color(isWinter ? '#cbd5e1' : '#06b6d4') },
     uGlobeCenter: { value: new THREE.Vector3(0, 0, 0) },
-  }), [isWinter])
+  }).current
 
   useFrame((state) => {
+    uniforms.uColor1.value.set(isWinter ? '#94a3b8' : '#0ea5e9')
+    uniforms.uColor2.value.set(isWinter ? '#cbd5e1' : '#06b6d4')
     if (meshRef.current) {
-      uniforms.uTime.value = state.clock.elapsedTime
-      // Get the globe's actual world position for correct calculations
+      if (!reducedMotion) uniforms.uTime.value = state.clock.elapsedTime
       meshRef.current.getWorldPosition(uniforms.uGlobeCenter.value)
     }
   })
 
   return (
     <mesh ref={meshRef}>
-      <sphereGeometry args={[radius + 0.15, 64, 64]} />
+      <sphereGeometry args={[radius + 0.15, 32, 32]} />
       <shaderMaterial
         transparent
         uniforms={uniforms}
@@ -84,7 +85,7 @@ export function Ocean({ radius = 50, isWinter = false }) {
             gl_FragColor = vec4(waterColor, alpha);
           }
         `}
-        side={THREE.DoubleSide}
+        side={THREE.FrontSide}
         depthWrite={false}
       />
     </mesh>

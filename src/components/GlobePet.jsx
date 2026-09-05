@@ -1,14 +1,17 @@
-import { useRef, useMemo } from 'react'
+import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { dampAngle } from '../helpers/dampAngle'
 import { Prop } from './Prop'
 
-/**
- * An autonomous animal that wanders around a small patch of the globe surface,
- * optionally flying at a fixed height (flyHeight > 0) instead of walking on the ground.
- */
-export function GlobePet({ modelPath, position = [0, 0, 0], scale = 0.35, speed = 0.4, flyHeight = 0 }) {
+export function GlobePet({
+  modelPath,
+  position = [0, 0, 0],
+  scale = 0.35,
+  speed = 0.4,
+  flyHeight = 0,
+  frozen = false,
+}) {
   const pivotRef = useRef()
   const meshRef = useRef()
   const initialLat = position[2] / 50
@@ -18,7 +21,7 @@ export function GlobePet({ modelPath, position = [0, 0, 0], scale = 0.35, speed 
   const animalRot = useRef(0)
 
   useFrame((state, delta) => {
-    if (!pivotRef.current || !meshRef.current) return
+    if (!pivotRef.current || !meshRef.current || frozen) return
     waitTimer.current -= delta
 
     if (waitTimer.current <= 0) {
@@ -45,7 +48,7 @@ export function GlobePet({ modelPath, position = [0, 0, 0], scale = 0.35, speed 
   return (
     <group ref={pivotRef} rotation={[initialLat, 0, initialLon]}>
       <group ref={meshRef} position={[0, 50 + position[1] + flyHeight, 0]}>
-        <Prop path={modelPath} scale={scale} castShadow />
+        <Prop path={modelPath} scale={scale} />
       </group>
     </group>
   )

@@ -1,9 +1,11 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useGLTF, useAnimations } from '@react-three/drei'
+import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js'
 
 export function Juanan({ animationName = 'idle', ...props }) {
   const { scene, animations } = useGLTF('/models/Player/juanan.glb')
-  const { actions, names } = useAnimations(animations, scene)
+  const clone = useMemo(() => cloneSkeleton(scene), [scene])
+  const { actions, names } = useAnimations(animations, clone)
 
   useEffect(() => {
     if (!actions || names.length === 0) return
@@ -18,7 +20,6 @@ export function Juanan({ animationName = 'idle', ...props }) {
 
       if (isTarget) {
         action.timeScale = targetPrefix === 'walk' ? 1.3 : 1.0
-        
         action.reset().fadeIn(0.2).play()
       } else {
         action.fadeOut(0.2)
@@ -26,7 +27,5 @@ export function Juanan({ animationName = 'idle', ...props }) {
     })
   }, [animationName, actions, names])
 
-  return <primitive object={scene} {...props} />
+  return <primitive object={clone} {...props} />
 }
-
-useGLTF.preload('/models/Player/juanan.glb')

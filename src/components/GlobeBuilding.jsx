@@ -52,7 +52,7 @@ const GlobeBuilding = React.forwardRef(({
     const isClose = posRef.current.length() < interactDistance
 
     if (isClose && !wasClose.current) {
-      setTooltip({ text: interactData.title, action: () => onEnter(interactData) })
+      setTooltip({ text: interactData.tooltip || interactData.title, action: () => onEnter(interactData) })
       wasClose.current = true
     } else if (!isClose && wasClose.current) {
       setTooltip(null)
