@@ -117,6 +117,7 @@ function RoomShell() {
 
       <CuboidCollider args={[2.5, 2, 0.2]} position={[-3.5, 2, 6.2]} />
       <CuboidCollider args={[2.5, 2, 0.2]} position={[3.5, 2, 6.2]} />
+      <CuboidCollider args={[1.2, 2, 0.28]} position={[0, 2, 5.85]} />
       <mesh position={[-3.5, 2, 6.2]}>
         <boxGeometry args={[5, 4, 0.4]} />
         <meshStandardMaterial color={wall} roughness={0.9} />
@@ -126,7 +127,6 @@ function RoomShell() {
         <meshStandardMaterial color={wall} roughness={0.9} />
       </mesh>
 
-      <CuboidCollider args={[1.5, 0.55, 0.2]} position={[0, 3.45, 6.2]} />
       <mesh position={[0, 3.45, 6.2]}>
         <boxGeometry args={[2.1, 1.1, 0.38]} />
         <meshStandardMaterial color={wall} roughness={0.9} />
