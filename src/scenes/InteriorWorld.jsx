@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { useKeyboardControls } from '@react-three/drei'
+import { Html, useKeyboardControls } from '@react-three/drei'
 import { Physics, RigidBody, CapsuleCollider, CuboidCollider } from '@react-three/rapier'
 import * as THREE from 'three'
 import { dampAngle } from '../helpers/dampAngle'
@@ -63,6 +63,33 @@ function InteriorPlayer({ isFrozen }) {
       <CapsuleCollider args={[0.4, 0.35]} position={[0, 0.75, 0]} />
       <group ref={visualRef}><Juanan animationName={anim} scale={0.8} /></group>
     </RigidBody>
+  )
+}
+
+function InteractHint({ position, label, color = '#60a5fa' }) {
+  const bob = useRef()
+
+  useFrame((state) => {
+    if (!bob.current) return
+    bob.current.position.y = Math.sin(state.clock.elapsedTime * 2.6) * 0.14
+  })
+
+  return (
+    <group position={position}>
+      <group ref={bob}>
+        <mesh>
+          <sphereGeometry args={[0.11, 14, 14]} />
+          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={1.4} toneMapped={false} />
+        </mesh>
+        <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -0.02, 0]}>
+          <torusGeometry args={[0.22, 0.03, 8, 20]} />
+          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.8} toneMapped={false} />
+        </mesh>
+        <Html position={[0, 0.42, 0]} center distanceFactor={10} style={{ pointerEvents: 'none' }}>
+          <div className="interact-hint">{label}</div>
+        </Html>
+      </group>
+    </group>
   )
 }
 
@@ -192,6 +219,16 @@ export function InteriorWorld({ onExitHouse, onOpenModal, setTooltip, isFrozen }
 
         <RigidBody type="fixed" colliders={false}>
           <CuboidCollider
+            args={[1.9, 1.2, 1.35]}
+            position={[3.15, 1.2, 3.15]}
+            sensor
+            onIntersectionEnter={() => setTooltip({ text: 'ver los hobbies', action: () => onOpenModal(projects.hobbies) })}
+            onIntersectionExit={() => setTooltip(null)}
+          />
+        </RigidBody>
+
+        <RigidBody type="fixed" colliders={false}>
+          <CuboidCollider
             args={[1.1, 1.5, 0.7]}
             position={[0, 1.3, 5.35]}
             sensor
@@ -202,6 +239,9 @@ export function InteriorWorld({ onExitHouse, onOpenModal, setTooltip, isFrozen }
 
         <InteriorPlayer isFrozen={isFrozen} />
       </Physics>
+
+      <InteractHint position={[-4.2, 2.05, -3.35]} label="Stack" />
+      <InteractHint position={[4.82, 1.85, 3.15]} label="Hobbies" color="#fbbf24" />
     </>
   )
 }

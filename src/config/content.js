@@ -11,13 +11,23 @@ export const projects = {
     id: 'setup',
     title: 'Setup de desarrollo',
     description:
-      'Rincón de trabajo con el que prototipo interfaces y escenas 3D. El stack está agrupado por tipo:',
+      'Rincón de trabajo con el que prototipo interfaces. El stack está agrupado por tipo:',
     stack: [
-      { label: 'Frameworks', items: ['Vue 3', 'Vue 2', 'Nuxt 3', 'React'] },
+      { label: 'Frameworks', items: ['Vue 3', 'Vue 2', 'Nuxt 3', 'React', 'Angular'] },
       { label: 'Lenguajes', items: ['TypeScript', 'JavaScript', 'SQL'] },
       { label: 'Marcado y estilos', items: ['HTML', 'CSS', 'SCSS', 'Tailwind', 'Bootstrap'] },
     ],
     links: [{ label: 'GitHub', href: profile.github }],
+  },
+  hobbies: {
+    id: 'hobbies',
+    title: 'Hobbies',
+    description:
+      'Aqui puedes ver algunos de mis hobbies y aficiones.',
+    stack: [
+      { label: 'Hobbies', items: ['Series', 'Anime', 'Videojuegos', 'Leer', 'Automovilismo'] },
+    ],
+    links: [],
   },
   portfolio3d: {
     id: 'portfolio3d',
