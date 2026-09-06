@@ -296,11 +296,32 @@ html, body, #root {
   font-size: 15px;
 }
 
+.modal-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.stack-group h3 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
 .modal-tags {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin: 20px 0;
+  margin: 0;
+}
+
+.modal-stack + .modal-actions,
+.modal p + .modal-tags {
+  margin-top: 20px;
 }
 
 .modal-tags span {

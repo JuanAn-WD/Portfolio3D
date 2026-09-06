@@ -11,8 +11,12 @@ export const projects = {
     id: 'setup',
     title: 'Setup de desarrollo',
     description:
-      'Rincón de trabajo con el que prototipo interfaces y escenas 3D. Stack actual: React, Three.js y Vite.',
-    tags: ['React', 'Three.js', 'Vite'],
+      'Rincón de trabajo con el que prototipo interfaces y escenas 3D. El stack está agrupado por tipo:',
+    stack: [
+      { label: 'Frameworks', items: ['Vue 3', 'Vue 2', 'Nuxt 3', 'React'] },
+      { label: 'Lenguajes', items: ['TypeScript', 'JavaScript', 'SQL'] },
+      { label: 'Marcado y estilos', items: ['HTML', 'CSS', 'SCSS', 'Tailwind', 'Bootstrap'] },
+    ],
     links: [{ label: 'GitHub', href: profile.github }],
   },
   portfolio3d: {

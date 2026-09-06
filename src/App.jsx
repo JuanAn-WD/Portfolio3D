@@ -144,6 +144,20 @@ export default function App() {
           >
             <h2 id="modal-title">{modalData.title}</h2>
             <p>{modalData.description}</p>
+            {modalData.stack?.length > 0 && (
+              <div className="modal-stack">
+                {modalData.stack.map((group) => (
+                  <div key={group.label} className="stack-group">
+                    <h3>{group.label}</h3>
+                    <div className="modal-tags">
+                      {group.items.map((tag) => (
+                        <span key={tag}>{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
             {modalData.tags?.length > 0 && (
               <div className="modal-tags">
                 {modalData.tags.map((tag) => (
