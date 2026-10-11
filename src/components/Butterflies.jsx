@@ -2,7 +2,7 @@ import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
-const BUTTERFLY_COLORS = ['#f472b6', '#a78bfa', '#fbbf24', '#fb923c', '#34d399', '#60a5fa']
+const BUTTERFLY_COLORS = ['#e07a6a', '#e8b84a', '#d4783c', '#4a9e6a', '#5eb8a8', '#c4a574']
 
 /**
  * A single butterfly with flapping wing geometry.

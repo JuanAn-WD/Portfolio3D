@@ -17,7 +17,13 @@ export function BrandIntro({ visible, onEnter }) {
         <p className="brand-intro-role">{profile.role}</p>
         <h1 id="brand-intro-title" className="brand-intro-name">{profile.name}</h1>
         <p className="brand-intro-tagline">{profile.tagline}</p>
-        <button ref={enterRef} type="button" className="btn-primary brand-intro-cta" onClick={onEnter}>
+        <button
+          id="explorar"
+          ref={enterRef}
+          type="button"
+          className="btn-primary brand-intro-cta"
+          onClick={onEnter}
+        >
           Explorar el planeta
         </button>
       </div>

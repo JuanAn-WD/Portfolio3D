@@ -8,16 +8,17 @@ export function DayNightLighting({ cycleDuration = 90, isWinter = false, reduced
   const dirLightRef = useRef()
   const ambientRef = useRef()
 
+  // Dawn / day / dusk / night — night is deep teal-ink, not purple AI
   const skyColors = isWinter
-    ? [new THREE.Color('#7c8eb8'), new THREE.Color('#a5b4fc'), new THREE.Color('#818cf8'), new THREE.Color('#312e81')]
-    : [new THREE.Color('#f59e0b'), new THREE.Color('#87CEEB'), new THREE.Color('#f97316'), new THREE.Color('#1e1b4b')]
+    ? [new THREE.Color('#8a9bb0'), new THREE.Color('#b8c4d4'), new THREE.Color('#6b8094'), new THREE.Color('#1a2a34')]
+    : [new THREE.Color('#e8a04a'), new THREE.Color('#7eb8c9'), new THREE.Color('#d4783c'), new THREE.Color('#0d1f28')]
 
   const sunColors = isWinter
-    ? [new THREE.Color('#fde68a'), new THREE.Color('#f8fafc'), new THREE.Color('#fcd34d'), new THREE.Color('#6366f1')]
-    : [new THREE.Color('#fbbf24'), new THREE.Color('#fffbeb'), new THREE.Color('#fb923c'), new THREE.Color('#4338ca')]
+    ? [new THREE.Color('#f5e6c8'), new THREE.Color('#f8fafc'), new THREE.Color('#e8d4a8'), new THREE.Color('#7a9aaa')]
+    : [new THREE.Color('#f0c14a'), new THREE.Color('#fff6e0'), new THREE.Color('#e8954a'), new THREE.Color('#5a8a8a')]
 
-  const sunIntensities = isWinter ? [1.0, 1.4, 0.9, 0.3] : [1.2, 1.8, 1.0, 0.2]
-  const ambientIntensities = isWinter ? [0.5, 0.7, 0.5, 0.25] : [0.5, 0.7, 0.4, 0.15]
+  const sunIntensities = isWinter ? [1.0, 1.4, 0.9, 0.3] : [1.2, 1.8, 1.0, 0.22]
+  const ambientIntensities = isWinter ? [0.5, 0.7, 0.5, 0.25] : [0.5, 0.7, 0.4, 0.18]
 
   useFrame((state) => {
     if (!active) return
@@ -50,7 +51,7 @@ export function DayNightLighting({ cycleDuration = 90, isWinter = false, reduced
         ref={dirLightRef}
         position={[14, 22, 10]}
         intensity={1.8}
-        color="#fffbeb"
+        color="#fff6e0"
         castShadow={active}
         shadow-mapSize={[1024, 1024]}
         shadow-camera-far={80}
@@ -60,8 +61,8 @@ export function DayNightLighting({ cycleDuration = 90, isWinter = false, reduced
         shadow-camera-bottom={-15}
       />
       <hemisphereLight
-        color={isWinter ? '#a5b4fc' : '#87ceeb'}
-        groundColor={isWinter ? '#334155' : '#4ade80'}
+        color={isWinter ? '#9eb0c0' : '#7eb8c9'}
+        groundColor={isWinter ? '#3d4a45' : '#3d8f5a'}
         intensity={0.3}
       />
     </>

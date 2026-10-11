@@ -41,6 +41,8 @@ export function VirtualJoystick() {
     <div
       className="dpad"
       ref={baseRef}
+      role="application"
+      aria-label="Cruzeta de movimiento. Mantén pulsado y arrastra para mover al personaje."
       onPointerDown={(e) => {
         e.preventDefault()
         e.currentTarget.setPointerCapture(e.pointerId)
@@ -53,15 +55,14 @@ export function VirtualJoystick() {
       }}
       onPointerUp={reset}
       onPointerCancel={reset}
-      aria-hidden="true"
     >
-      <div className="dpad-arm dpad-arm-v" />
-      <div className="dpad-arm dpad-arm-h" />
-      <span className="dpad-dir dpad-dir-up" />
-      <span className="dpad-dir dpad-dir-down" />
-      <span className="dpad-dir dpad-dir-left" />
-      <span className="dpad-dir dpad-dir-right" />
-      <div className="dpad-knob" ref={knobRef} />
+      <div className="dpad-arm dpad-arm-v" aria-hidden="true" />
+      <div className="dpad-arm dpad-arm-h" aria-hidden="true" />
+      <span className="dpad-dir dpad-dir-up" aria-hidden="true" />
+      <span className="dpad-dir dpad-dir-down" aria-hidden="true" />
+      <span className="dpad-dir dpad-dir-left" aria-hidden="true" />
+      <span className="dpad-dir dpad-dir-right" aria-hidden="true" />
+      <div className="dpad-knob" ref={knobRef} aria-hidden="true" />
     </div>
   )
 }

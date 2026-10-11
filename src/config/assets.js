@@ -24,17 +24,38 @@ const FOREST_MODELS = [
   '/models/Edifices2/detail-parasol-b.glb',
 ]
 
-export const USED_MODEL_PATHS = [
+/** Critical for first paint: player, buildings, forest / village props. */
+export const CORE_MODEL_PATHS = [
   '/models/Player/juanan.glb',
   ...buildings.map((b) => b.modelPath),
   ...buildings.flatMap((b) => (b.chimney ? [b.chimney.path] : [])),
-  ...fauna.map((f) => f.modelPath),
-  ...interiorFurniture.map((f) => f.path),
   ...FOREST_MODELS,
 ]
 
-export function preloadUsedModels() {
-  for (const path of new Set(USED_MODEL_PATHS)) {
+/** Deferred after core load: fauna + interior (only needed inside the house). */
+export const DEFERRED_MODEL_PATHS = [
+  ...fauna.map((f) => f.modelPath),
+  ...interiorFurniture.map((f) => f.path),
+]
+
+export const USED_MODEL_PATHS = [...CORE_MODEL_PATHS, ...DEFERRED_MODEL_PATHS]
+
+function preloadPaths(paths) {
+  for (const path of new Set(paths)) {
     useGLTF.preload(path)
   }
+}
+
+export function preloadCoreModels() {
+  preloadPaths(CORE_MODEL_PATHS)
+}
+
+export function preloadDeferredModels() {
+  preloadPaths(DEFERRED_MODEL_PATHS)
+}
+
+/** @deprecated Prefer preloadCoreModels + preloadDeferredModels */
+export function preloadUsedModels() {
+  preloadCoreModels()
+  preloadDeferredModels()
 }

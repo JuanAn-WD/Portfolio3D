@@ -4,7 +4,7 @@ import { AdaptiveDpr, KeyboardControls, useKeyboardControls } from '@react-three
 import * as THREE from 'three'
 
 import { keyboardMap } from './config/keyboardMap'
-import { preloadUsedModels } from './config/assets'
+import { preloadCoreModels, preloadDeferredModels } from './config/assets'
 import { profile } from './config/content'
 import { PlanetWorld } from './scenes/PlanetWorld'
 import { MovementProvider } from './context/MovementContext'
@@ -16,7 +16,7 @@ import { VirtualJoystick } from './components/VirtualJoystick'
 import { usePrefersReducedMotion } from './helpers/usePrefersReducedMotion'
 import { useTouchUi } from './helpers/useTouchUi'
 
-preloadUsedModels()
+preloadCoreModels()
 
 const InteriorWorld = lazy(() =>
   import('./scenes/InteriorWorld').then((m) => ({ default: m.InteriorWorld }))
@@ -56,6 +56,28 @@ export default function App() {
 
   const showIntro = assetsReady && introOpen
 
+  useEffect(() => {
+    if (!assetsReady) return undefined
+    let cancelled = false
+    const run = () => {
+      if (!cancelled) preloadDeferredModels()
+    }
+    let idleId
+    let timeoutId
+    if (typeof window.requestIdleCallback === 'function') {
+      idleId = window.requestIdleCallback(run, { timeout: 2000 })
+    } else {
+      timeoutId = window.setTimeout(run, 500)
+    }
+    return () => {
+      cancelled = true
+      if (idleId != null && typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(idleId)
+      }
+      if (timeoutId != null) window.clearTimeout(timeoutId)
+    }
+  }, [assetsReady])
+
   const switchScene = useCallback((nextScene) => {
     setIsFading(true)
     setTooltip(null)
@@ -92,20 +114,28 @@ export default function App() {
   }
 
   const frozen = isFading || !!modalData || showIntro
+  const skipHref = showIntro
+    ? '#explorar'
+    : (hudOpen && !modalData ? '#controles' : '#experiencia')
+  const skipLabel = showIntro
+    ? 'Ir a explorar'
+    : (hudOpen && !modalData ? 'Ir a controles' : 'Ir a la experiencia')
 
   return (
     <div className="app-root" onClick={() => window.focus()}>
-      <a className="skip-link" href={profile.github}>Perfil de GitHub</a>
+      <a className="skip-link" href={skipHref}>{skipLabel}</a>
 
       <ErrorBoundary>
         <MovementProvider>
           <KeyboardControls map={keyboardMap}>
             <InteractionBinder tooltip={tooltip} blocked={!!modalData || isFading || showIntro} />
             <Canvas
+              id="experiencia"
               shadows
               dpr={[1, 1.5]}
               camera={{ position: [10, 10, 12], fov: 40 }}
               gl={{ antialias: true, powerPreference: 'high-performance' }}
+              aria-label={`Portfolio 3D de ${profile.name}`}
             >
               <AdaptiveDpr />
               <Suspense fallback={null}>

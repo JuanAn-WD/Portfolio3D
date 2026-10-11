@@ -37,7 +37,7 @@ export function Fireflies({ count = 24, isWinter = false, reducedMotion = false 
         startLon: (Math.random() - 0.5) * spread,
         speed: 0.2 + Math.random() * 0.4,
         pulseSpeed: 1.5 + Math.random() * 2,
-        color: isWinter ? '#93c5fd' : (Math.random() > 0.5 ? '#fbbf24' : '#4ade80'),
+        color: isWinter ? '#a8c4c0' : (Math.random() > 0.5 ? '#e8b84a' : '#4a9e6a'),
         baseHeight: 50.3 + Math.random() * 2,
       }
     })

@@ -1,6 +1,6 @@
 export const profile = {
   name: 'JuanAn',
-  role: 'Desarrollador web',
+  role: 'Front-end · experiencias 3D',
   github: 'https://github.com/JuanAn-WD',
   tagline: 'Experiencias web interactivas en un planeta explorable.',
   summary:
@@ -24,9 +24,9 @@ export const projects = {
     id: 'hobbies',
     title: 'Hobbies',
     description:
-      'Aqui puedes ver algunos de mis hobbies y aficiones.',
+      'Aquí puedes ver algunos de mis hobbies y aficiones.',
     stack: [
-      { label: 'Hobbies', items: ['Series', 'Anime', 'Videojuegos', 'Leer', 'Automovilismo'] },
+      { label: 'Fuera del teclado', items: ['Series', 'Anime', 'Videojuegos', 'Leer', 'Automovilismo'] },
     ],
     links: [],
   },
@@ -35,7 +35,7 @@ export const projects = {
     title: 'Portfolio 3D',
     description:
       'Mundo esférico explorable (estilo treadmill): el personaje se queda arriba y el planeta rota debajo. Naturaleza procedural, interiores con físicas y ciclo día/noche.',
-    tags: ['React Three Fiber', 'Rapier', 'Drei'],
+    tags: ['React Three Fiber', 'Rapier', 'Mundo procedural'],
     links: [{ label: 'GitHub', href: 'https://github.com/JuanAn-WD/Portfolio3D' }],
   },
   tictactoe: {
@@ -43,7 +43,7 @@ export const projects = {
     title: 'Tic Tac Toe',
     description:
       'Tres en raya en el navegador. Un proyecto anterior, más pequeño, de lógica de juego y UI.',
-    tags: ['JavaScript', 'React'],
+    tags: ['React', 'Lógica de juego'],
     links: [
       { label: 'Demo', href: 'https://tic-tac-toe-juanan-wd.vercel.app' },
       { label: 'GitHub', href: 'https://github.com/JuanAn-WD/TicTacToe' },

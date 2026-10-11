@@ -1,4 +1,4 @@
-import { useRef, useState, useMemo, useLayoutEffect } from 'react'
+import { useRef, useState, useMemo, useLayoutEffect, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useKeyboardControls } from '@react-three/drei'
 import * as THREE from 'three'
@@ -39,12 +39,24 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, g
   const [, getKeys] = useKeyboardControls()
   const { axes } = useMovement()
   const [anim, setAnim] = useState('idle')
+  const [lifeReady, setLifeReady] = useState(false)
   const playerRot = useRef(0)
   const reducedMotion = usePrefersReducedMotion()
 
   const currentMonth = new Date().getMonth()
   const isWinter = currentMonth === 11 || currentMonth === 0 || currentMonth === 1
-  const groundColor = isWinter ? '#f1f5f9' : '#4ade80'
+  const groundColor = isWinter ? '#e8eef2' : '#3d9a5c'
+
+  // Defer fauna / FX so first paint stays lighter (LCP / GPU)
+  useEffect(() => {
+    if (!active) {
+      setLifeReady(false)
+      return undefined
+    }
+    const delay = reducedMotion ? 0 : 900
+    const id = window.setTimeout(() => setLifeReady(true), delay)
+    return () => window.clearTimeout(id)
+  }, [active, reducedMotion])
 
   const globeGeometry = useMemo(() => {
     const geo = new THREE.SphereGeometry(50, 48, 48)
@@ -197,7 +209,7 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, g
         </mesh>
 
         <Ocean radius={50} isWinter={isWinter} reducedMotion={reducedMotion} />
-        <Clouds count={16} isWinter={isWinter} />
+        <Clouds count={lifeReady ? 16 : 10} isWinter={isWinter} />
 
         <GlobePath start={[0, 0]} end={[-5, -7]} steps={8} isWinter={isWinter} />
         <GlobePath start={[0, 0]} end={[8, -3]} steps={10} isWinter={isWinter} />
@@ -224,9 +236,13 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, g
           />
         ))}
 
-        <Fauna frozen={isFrozen} reducedMotion={reducedMotion} />
-        <Fireflies count={24} isWinter={isWinter} reducedMotion={reducedMotion} />
-        <Butterflies count={10} isWinter={isWinter || reducedMotion} />
+        {lifeReady && (
+          <>
+            <Fauna frozen={isFrozen} reducedMotion={reducedMotion} />
+            <Fireflies count={18} isWinter={isWinter} reducedMotion={reducedMotion} />
+            <Butterflies count={8} isWinter={isWinter || reducedMotion} />
+          </>
+        )}
       </group>
     </>
   )

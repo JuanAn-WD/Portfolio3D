@@ -6,7 +6,7 @@ export function Hud({ onDismiss, visible }) {
   if (!visible) return null
 
   return (
-    <aside className="hud" aria-label="Controles">
+    <aside id="controles" className="hud" aria-label="Controles" tabIndex={-1}>
       <p className="hud-heading">Controles</p>
       <ul className="hud-keys">
         {touch ? (

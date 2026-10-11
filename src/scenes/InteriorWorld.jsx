@@ -66,7 +66,7 @@ function InteriorPlayer({ isFrozen }) {
   )
 }
 
-function InteractHint({ position, color = '#7dd3fc' }) {
+function InteractHint({ position, color = '#5eb8a8' }) {
   const bob = useRef()
 
   useFrame((state) => {
@@ -186,7 +186,7 @@ export function InteriorWorld({ onExitHouse, onOpenModal, setTooltip, isFrozen }
       <hemisphereLight args={['#fff7ed', '#7c5a3a', 0.45]} />
       <ambientLight intensity={0.55} color="#fff4e6" />
       <pointLight position={[0, 3.6, 0]} intensity={2.8} color="#ffe8c2" distance={16} castShadow />
-      <pointLight position={[-5.2, 2.4, -3.4]} intensity={2.2} color="#93c5fd" distance={8} />
+      <pointLight position={[-5.2, 2.4, -3.4]} intensity={2.2} color="#5eb8a8" distance={8} />
       <pointLight position={[3.15, 2.1, -5.2]} intensity={1.6} color="#fde68a" distance={7} />
       <pointLight position={[3.4, 2.2, 3.2]} intensity={1.8} color="#fed7aa" distance={9} />
 
