@@ -2,6 +2,7 @@ export const profile = {
   name: 'JuanAn',
   role: 'Desarrollador web',
   github: 'https://github.com/JuanAn-WD',
+  tagline: 'Experiencias web interactivas en un planeta explorable.',
   summary:
     'Construyo experiencias web interactivas. Este planeta es mi portfolio: entra al estudio para ver el setup y visita los edificios para abrir proyectos reales.',
 }

@@ -1,4 +1,3 @@
-import { profile } from '../config/content'
 import { useTouchUi } from '../helpers/useTouchUi'
 
 export function Hud({ onDismiss, visible }) {
@@ -8,16 +7,12 @@ export function Hud({ onDismiss, visible }) {
 
   return (
     <aside className="hud" aria-label="Controles">
-      <div className="hud-brand">
-        <strong>{profile.name}</strong>
-        <span>{profile.role}</span>
-      </div>
-      <p className="hud-summary">{profile.summary}</p>
+      <p className="hud-heading">Controles</p>
       <ul className="hud-keys">
         {touch ? (
           <>
             <li>Cruzeta inferior izquierda para mover</li>
-            <li>Acércate a un edificio y pulsa Interactuar</li>
+            <li>Acércate a un edificio y toca Interactuar</li>
           </>
         ) : (
           <>

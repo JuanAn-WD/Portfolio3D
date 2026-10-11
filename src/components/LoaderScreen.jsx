@@ -1,15 +1,22 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useProgress } from '@react-three/drei'
+import { profile } from '../config/content'
 
-export function LoaderScreen() {
+export function LoaderScreen({ onComplete }) {
   const { active, progress, loaded, total } = useProgress()
   const [done, setDone] = useState(false)
+  const reported = useRef(false)
 
   useEffect(() => {
     if (!active && progress >= 100) setDone(true)
   }, [active, progress])
 
-  // Hide only after a completed load; keep visible between asset batches
+  useEffect(() => {
+    if (!done || reported.current) return
+    reported.current = true
+    onComplete?.()
+  }, [done, onComplete])
+
   if (done) return null
   if (!active && total === 0) return null
 
@@ -17,6 +24,7 @@ export function LoaderScreen() {
   return (
     <div className="loader-screen" role="status" aria-live="polite">
       <div className="loader-card">
+        <p className="loader-brand">{profile.name}</p>
         <p className="loader-title">Cargando el planeta</p>
         <div className="loader-bar" aria-hidden="true">
           <span style={{ width: `${pct}%` }} />

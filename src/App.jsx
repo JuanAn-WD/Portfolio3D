@@ -10,6 +10,7 @@ import { PlanetWorld } from './scenes/PlanetWorld'
 import { MovementProvider } from './context/MovementContext'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { LoaderScreen } from './components/LoaderScreen'
+import { BrandIntro } from './components/BrandIntro'
 import { Hud } from './components/Hud'
 import { VirtualJoystick } from './components/VirtualJoystick'
 import { usePrefersReducedMotion } from './helpers/usePrefersReducedMotion'
@@ -39,10 +40,21 @@ export default function App() {
   const [tooltip, setTooltip] = useState(null)
   const [modalData, setModalData] = useState(null)
   const [hudOpen, setHudOpen] = useState(() => sessionStorage.getItem('hud-hidden') !== '1')
+  const [assetsReady, setAssetsReady] = useState(false)
+  const [introOpen, setIntroOpen] = useState(() => sessionStorage.getItem('intro-dismissed') !== '1')
   const isCoarse = useTouchUi()
   const globeQuatRef = useRef(new THREE.Quaternion())
   const closeBtnRef = useRef(null)
   const reducedMotion = usePrefersReducedMotion()
+
+  const onAssetsReady = useCallback(() => setAssetsReady(true), [])
+
+  const dismissIntro = useCallback(() => {
+    sessionStorage.setItem('intro-dismissed', '1')
+    setIntroOpen(false)
+  }, [])
+
+  const showIntro = assetsReady && introOpen
 
   const switchScene = useCallback((nextScene) => {
     setIsFading(true)
@@ -62,11 +74,13 @@ export default function App() {
 
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === 'Escape' && modalData) closeModal()
+      if (e.key !== 'Escape') return
+      if (modalData) closeModal()
+      else if (showIntro) dismissIntro()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [modalData, closeModal])
+  }, [modalData, closeModal, showIntro, dismissIntro])
 
   useEffect(() => {
     if (modalData) closeBtnRef.current?.focus()
@@ -77,7 +91,7 @@ export default function App() {
     setHudOpen(false)
   }
 
-  const frozen = isFading || !!modalData
+  const frozen = isFading || !!modalData || showIntro
 
   return (
     <div className="app-root" onClick={() => window.focus()}>
@@ -86,7 +100,7 @@ export default function App() {
       <ErrorBoundary>
         <MovementProvider>
           <KeyboardControls map={keyboardMap}>
-            <InteractionBinder tooltip={tooltip} blocked={!!modalData || isFading} />
+            <InteractionBinder tooltip={tooltip} blocked={!!modalData || isFading || showIntro} />
             <Canvas
               shadows
               dpr={[1, 1.5]}
@@ -116,18 +130,20 @@ export default function App() {
                 )}
               </Suspense>
             </Canvas>
-            <LoaderScreen />
+            <LoaderScreen onComplete={onAssetsReady} />
           </KeyboardControls>
 
-          {isCoarse && !modalData && <VirtualJoystick />}
+          {isCoarse && !modalData && !showIntro && <VirtualJoystick />}
         </MovementProvider>
       </ErrorBoundary>
 
       <div className="scene-fade" style={{ opacity: isFading ? 1 : 0 }} />
 
-      <Hud visible={hudOpen && !modalData} onDismiss={hideHud} />
+      <BrandIntro visible={showIntro} onEnter={dismissIntro} />
 
-      {tooltip && !modalData && !isFading && (
+      <Hud visible={hudOpen && !modalData && !showIntro} onDismiss={hideHud} />
+
+      {tooltip && !modalData && !isFading && !showIntro && (
         <button type="button" className="tooltip" onClick={() => tooltip.action()}>
           {isCoarse ? 'Toca para' : <>Pulsa <kbd>E</kbd> para</>} {tooltip.text}
         </button>

@@ -1,25 +1,9 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import { Prop } from './Prop'
 import { Chimney } from './SmokeParticle'
-
-const LABEL_STYLE = {
-  backgroundColor: 'rgba(15, 23, 42, 0.85)',
-  backdropFilter: 'blur(8px)',
-  color: '#60a5fa',
-  padding: '8px 16px',
-  borderRadius: '12px',
-  fontFamily: 'system-ui, sans-serif',
-  fontWeight: '800',
-  fontSize: '14px',
-  whiteSpace: 'nowrap',
-  border: '2px solid rgba(96, 165, 250, 0.3)',
-  boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
-  textTransform: 'uppercase',
-  letterSpacing: '0.5px',
-}
 
 /**
  * A project building placed on the globe surface, with a proximity sensor
@@ -43,6 +27,7 @@ const GlobeBuilding = React.forwardRef(({
   const interactRef = useRef()
   const wasClose = useRef(false)
   const posRef = useRef(new THREE.Vector3())
+  const [near, setNear] = useState(false)
   const lat = position[2] / 50
   const lon = -position[0] / 50
 
@@ -53,9 +38,11 @@ const GlobeBuilding = React.forwardRef(({
 
     if (isClose && !wasClose.current) {
       setTooltip({ text: interactData.tooltip || interactData.title, action: () => onEnter(interactData) })
+      setNear(true)
       wasClose.current = true
     } else if (!isClose && wasClose.current) {
       setTooltip(null)
+      setNear(false)
       wasClose.current = false
     }
   })
@@ -70,11 +57,11 @@ const GlobeBuilding = React.forwardRef(({
           )}
           <group ref={interactRef} position={interactPosition} />
 
-          <Html position={[0, popupHeight, 0]} center style={{ pointerEvents: 'none' }}>
-            <div style={LABEL_STYLE}>
-              {popupTitle}
-            </div>
-          </Html>
+          {near && (
+            <Html position={[0, popupHeight, 0]} center style={{ pointerEvents: 'none' }}>
+              <div className="building-label">{popupTitle}</div>
+            </Html>
+          )}
         </group>
       </group>
     </group>

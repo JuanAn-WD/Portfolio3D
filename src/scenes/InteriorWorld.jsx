@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html, useKeyboardControls } from '@react-three/drei'
+import { useKeyboardControls } from '@react-three/drei'
 import { Physics, RigidBody, CapsuleCollider, CuboidCollider } from '@react-three/rapier'
 import * as THREE from 'three'
 import { dampAngle } from '../helpers/dampAngle'
@@ -66,28 +66,21 @@ function InteriorPlayer({ isFrozen }) {
   )
 }
 
-function InteractHint({ position, label, color = '#60a5fa' }) {
+function InteractHint({ position, color = '#7dd3fc' }) {
   const bob = useRef()
 
   useFrame((state) => {
     if (!bob.current) return
-    bob.current.position.y = Math.sin(state.clock.elapsedTime * 2.6) * 0.14
+    bob.current.position.y = Math.sin(state.clock.elapsedTime * 2.2) * 0.08
   })
 
   return (
     <group position={position}>
       <group ref={bob}>
         <mesh>
-          <sphereGeometry args={[0.11, 14, 14]} />
-          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={1.4} toneMapped={false} />
+          <sphereGeometry args={[0.07, 12, 12]} />
+          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.35} toneMapped={false} />
         </mesh>
-        <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -0.02, 0]}>
-          <torusGeometry args={[0.22, 0.03, 8, 20]} />
-          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.8} toneMapped={false} />
-        </mesh>
-        <Html position={[0, 0.42, 0]} center distanceFactor={10} style={{ pointerEvents: 'none' }}>
-          <div className="interact-hint">{label}</div>
-        </Html>
       </group>
     </group>
   )
@@ -240,8 +233,8 @@ export function InteriorWorld({ onExitHouse, onOpenModal, setTooltip, isFrozen }
         <InteriorPlayer isFrozen={isFrozen} />
       </Physics>
 
-      <InteractHint position={[-4.2, 2.05, -3.35]} label="Stack" />
-      <InteractHint position={[4.82, 1.85, 3.15]} label="Hobbies" color="#fbbf24" />
+      <InteractHint position={[-4.2, 2.05, -3.35]} />
+      <InteractHint position={[4.82, 1.85, 3.15]} color="#fcd34d" />
     </>
   )
 }
