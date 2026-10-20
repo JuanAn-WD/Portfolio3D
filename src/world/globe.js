@@ -108,3 +108,14 @@ export function belowSea(x, z) {
   writeFlatToGlobe(x, z, 0, _rel)
   return _rel.y / GLOBE_RADIUS < SEA_LIMIT
 }
+
+/**
+ * Metros que hay que bajar un objeto rígido para que el borde de su base
+ * toque la esfera. `foot` es el radio horizontal de esa base.
+ * `bury` esconde el canto unos centímetros dentro del césped.
+ */
+export function groundSink(foot, bury = 0.02) {
+  const r = Math.min(Math.abs(foot) || 0, GLOBE_RADIUS * 0.85)
+  const sag = GLOBE_RADIUS - Math.sqrt(GLOBE_RADIUS * GLOBE_RADIUS - r * r)
+  return sag + bury
+}

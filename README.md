@@ -34,9 +34,10 @@ El estudio (`action: 'enterHouse'`) abre el interior, que sigue definido en `int
 ## Controles
 
 - **WASD / flechas:** girar el planeta (W trae lo que hay delante; la cámara se queda fija detrás del personaje)
+- **Rueda del ratón:** acercar (arriba) y alejar (abajo) la cámara. También valen **+** y **−**
 - **E** o clic en el tooltip: interactuar
 - **Esc:** cerrar ficha
-- En táctil: stick inferior izquierdo
+- En táctil: stick inferior izquierdo, y pellizco con dos dedos para el zoom
 
 ## Scripts
 

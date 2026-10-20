@@ -1,36 +1,66 @@
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
-import { writeFlatToGlobe, writeSurfaceQuat } from '../world/globe'
+import { groundSink, writeFlatToGlobe, writeSurfaceQuat } from '../world/globe'
 
 const _dummy = new THREE.Object3D()
+const _vert = new THREE.Vector3()
+
+/** Radio horizontal de los vértices que tocan el suelo, tras apoyar el modelo en y = 0. */
+function baseFootprint(parts) {
+  let lowest = Infinity
+  for (const part of parts) {
+    const attr = part.geometry.attributes.position
+    if (!attr) continue
+    for (let i = 0; i < attr.count; i++) {
+      _vert.fromBufferAttribute(attr, i).applyMatrix4(part.local)
+      if (_vert.y < lowest) lowest = _vert.y
+    }
+  }
+  if (!Number.isFinite(lowest)) return 0.2
+  const limit = lowest + 0.1
+  let maxR = 0
+  for (const part of parts) {
+    const attr = part.geometry.attributes.position
+    if (!attr) continue
+    for (let i = 0; i < attr.count; i++) {
+      _vert.fromBufferAttribute(attr, i).applyMatrix4(part.local)
+      if (_vert.y > limit) continue
+      const r = Math.hypot(_vert.x, _vert.z)
+      if (r > maxR) maxR = r
+    }
+  }
+  return Math.max(maxR, 0.04)
+}
 
 /**
  * Repite un GLB con InstancedMesh. El modelo se apoya en y = 0 y se centra en XZ,
  * así que `position` es el centro de la base aunque el pivote del archivo no lo sea.
+ * Cada copia se hunde lo justo para que el borde de esa base toque la esfera.
  */
 export function FlatInstances({ model, items, shadow = false }) {
   const { scene } = useGLTF(model)
   const meshRefs = useRef([])
 
-  const parts = useMemo(() => {
+  const prepared = useMemo(() => {
     scene.updateMatrixWorld(true)
     const box = new THREE.Box3().setFromObject(scene)
     const center = box.getCenter(new THREE.Vector3())
     const pivot = new THREE.Matrix4().makeTranslation(-center.x, -box.min.y, -center.z)
-    const list = []
+    const parts = []
     scene.traverse((child) => {
       if (!child.isMesh || !child.geometry) return
-      list.push({
+      parts.push({
         geometry: child.geometry,
         material: child.material,
         local: new THREE.Matrix4().multiplyMatrices(pivot, child.matrixWorld),
       })
     })
-    return list
+    return { parts, baseRadius: baseFootprint(parts) }
   }, [scene])
 
   useLayoutEffect(() => {
+    const { parts, baseRadius } = prepared
     const globePoint = new THREE.Vector3()
     const quat = new THREE.Quaternion()
     parts.forEach((part, pi) => {
@@ -43,7 +73,8 @@ export function FlatInstances({ model, items, shadow = false }) {
         const sy = Array.isArray(scale) ? scale[1] : scale
         const sz = Array.isArray(scale) ? scale[2] : scale
         const [x, , z] = item.position
-        writeFlatToGlobe(x, z, 0.03, globePoint)
+        const foot = baseRadius * Math.max(sx, sz)
+        writeFlatToGlobe(x, z, -groundSink(foot, 0.015), globePoint)
         writeSurfaceQuat(x, z, item.rotation || 0, quat)
         _dummy.position.copy(globePoint)
         _dummy.quaternion.copy(quat)
@@ -56,13 +87,13 @@ export function FlatInstances({ model, items, shadow = false }) {
       mesh.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 80)
       mesh.frustumCulled = false
     })
-  }, [items, parts])
+  }, [items, prepared])
 
-  if (!items.length || !parts.length) return null
+  if (!items.length || !prepared.parts.length) return null
 
   return (
     <group>
-      {parts.map((part, i) => (
+      {prepared.parts.map((part, i) => (
         <instancedMesh
           key={`${model}-${i}-${items.length}`}
           ref={(el) => { meshRefs.current[i] = el }}

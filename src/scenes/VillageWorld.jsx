@@ -38,6 +38,8 @@ const _prevQ = new THREE.Quaternion()
 const _playerLocal = new THREE.Vector3()
 const _camGoal = new THREE.Vector3(0, 3.5, 6.5)
 const _spawnQ = new THREE.Quaternion()
+const ZOOM_MIN = 0.58
+const ZOOM_MAX = 2.55
 
 function readVista() {
   if (typeof window === 'undefined') return null
@@ -115,6 +117,7 @@ export function VillageWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, 
   const [lifeReady, setLifeReady] = useState(false)
   const playerRot = useRef(Math.PI)
   const playerVisualRef = useRef()
+  const zoomRef = useRef(1)
   const fog = useMemo(() => new THREE.Fog(isWinter ? '#b7c3ce' : '#7eb8c9', 58, 130), [isWinter])
 
   useEffect(() => () => {
@@ -146,6 +149,65 @@ export function VillageWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, 
     globe.worldToLocal(_playerLocal)
     worldRef.current.player.copy(_playerLocal)
   }, [globeQuatRef])
+
+  useEffect(() => {
+    if (!active || vista) return undefined
+    const closerCode = (code) => code === 'Equal' || code === 'NumpadAdd'
+    const fartherCode = (code) => code === 'Minus' || code === 'NumpadSubtract'
+    const onWheel = (event) => {
+      if (isFrozen || event.ctrlKey) return
+      event.preventDefault()
+      const next = zoomRef.current * Math.exp(event.deltaY * 0.00115)
+      zoomRef.current = THREE.MathUtils.clamp(next, ZOOM_MIN, ZOOM_MAX)
+    }
+    const onKey = (event) => {
+      if (isFrozen || event.metaKey || event.ctrlKey || event.altKey) return
+      const closer = closerCode(event.code)
+      const farther = fartherCode(event.code)
+      if (!closer && !farther) return
+      const tag = event.target?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return
+      event.preventDefault()
+      const step = event.repeat ? 0.97 : 0.9
+      zoomRef.current = THREE.MathUtils.clamp(
+        zoomRef.current * (closer ? step : (1 / step)),
+        ZOOM_MIN,
+        ZOOM_MAX,
+      )
+    }
+    let pinch = 0
+    const pinchDist = (touches) => Math.hypot(
+      touches[0].clientX - touches[1].clientX,
+      touches[0].clientY - touches[1].clientY,
+    )
+    const onTouchStart = (event) => {
+      if (event.touches.length === 2) pinch = pinchDist(event.touches)
+    }
+    const onTouchMove = (event) => {
+      if (isFrozen || event.touches.length !== 2 || pinch <= 0) return
+      const dist = pinchDist(event.touches)
+      zoomRef.current = THREE.MathUtils.clamp(zoomRef.current * (pinch / dist), ZOOM_MIN, ZOOM_MAX)
+      pinch = dist
+      event.preventDefault()
+    }
+    const onTouchEnd = (event) => {
+      if (event.touches.length < 2) pinch = 0
+    }
+    window.addEventListener('wheel', onWheel, { passive: false })
+    window.addEventListener('keydown', onKey)
+    window.addEventListener('touchstart', onTouchStart, { passive: true })
+    window.addEventListener('touchmove', onTouchMove, { passive: false })
+    window.addEventListener('touchend', onTouchEnd)
+    window.addEventListener('touchcancel', onTouchEnd)
+    return () => {
+      window.removeEventListener('wheel', onWheel)
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('touchend', onTouchEnd)
+      window.removeEventListener('touchcancel', onTouchEnd)
+    }
+  }, [active, isFrozen, vista])
 
   const registerHitbox = useCallback((hit) => {
     buildingsRef.current.push(hit)
@@ -192,7 +254,8 @@ export function VillageWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, 
       return
     }
 
-    state.camera.position.lerp(_camGoal, 0.1)
+    _camGoal.set(0, 3.5, 6.5).multiplyScalar(zoomRef.current)
+    state.camera.position.lerp(_camGoal, 0.12)
     state.camera.lookAt(0, 0.8, 0)
 
     const d = Math.min(delta, 0.05)
@@ -284,7 +347,7 @@ export function VillageWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, 
         ))}
 
         {map.lamps.map((lamp) => (
-          <GlobeFrame key={`${lamp[0]}-${lamp[1]}`} x={lamp[0]} z={lamp[1]}>
+          <GlobeFrame key={`${lamp[0]}-${lamp[1]}`} x={lamp[0]} y={-0.03} z={lamp[1]}>
             <StreetLamp position={[0, 0]} />
           </GlobeFrame>
         ))}

@@ -98,7 +98,7 @@ export function Critter({
   useLayoutEffect(() => {
     const world = worldRef?.current
     if (!world) return undefined
-    writeFlatToGlobe(home.x, home.z, fly || 0, _globe)
+    writeFlatToGlobe(home.x, home.z, fly > 0 ? fly : -0.012, _globe)
     world.actors.push({ id, x: _globe.x, y: _globe.y, z: _globe.z, radius: bodyRadius })
     return () => {
       world.actors = world.actors.filter((actor) => actor.id !== id)
@@ -108,7 +108,7 @@ export function Critter({
   useFrame((state, delta) => {
     const dt = Math.min(delta, 0.05)
     if (!root.current) return
-    const lift = fly > 0 ? fly + Math.sin(state.clock.elapsedTime * 3.2 + home.x) * 0.18 : 0
+    const lift = fly > 0 ? fly + Math.sin(state.clock.elapsedTime * 3.2 + home.x) * 0.18 : -0.012
     const pos = flat.current
 
     if (!(frozen || reducedMotion)) {

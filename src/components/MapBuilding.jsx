@@ -1,9 +1,10 @@
-import { useLayoutEffect, useMemo, useRef } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Html, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import { Chimney } from './SmokeParticle'
 import { GlobeFrame } from './GlobeFrame'
+import { groundSink } from '../world/globe'
 
 const _door = new THREE.Vector3()
 
@@ -37,12 +38,78 @@ function DoorMarker({ position }) {
   )
 }
 
-function Sign({ position }) {
+const SIGN_FONT = '"Liberation Serif", "DejaVu Serif", Georgia, serif'
+
+function signLayout(ctx, label, maxWidth) {
+  const words = label.trim().split(/\s+/)
+  let size = 128
+  while (size >= 52) {
+    ctx.font = `700 ${size}px ${SIGN_FONT}`
+    if (ctx.measureText(label).width <= maxWidth) return { size, lines: [label] }
+    if (words.length > 1) {
+      for (let i = 1; i < words.length; i++) {
+        const lines = [words.slice(0, i).join(' '), words.slice(i).join(' ')]
+        const widest = Math.max(...lines.map((line) => ctx.measureText(line).width))
+        if (widest <= maxWidth) return { size, lines }
+      }
+    }
+    size -= 4
+  }
+  return { size: 52, lines: words }
+}
+
+function makeSignTexture(label) {
+  const canvas = document.createElement('canvas')
+  canvas.width = 512
+  canvas.height = 320
+  const ctx = canvas.getContext('2d')
+  const { size, lines } = signLayout(ctx, label, 460)
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  ctx.font = `700 ${size}px ${SIGN_FONT}`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.lineJoin = 'round'
+  ctx.miterLimit = 2
+  ctx.lineWidth = Math.max(10, size * 0.09)
+  ctx.strokeStyle = 'rgba(255, 246, 226, 0.92)'
+  ctx.fillStyle = '#3a2414'
+  const lineHeight = size * 1.02
+  const top = canvas.height / 2 - ((lines.length - 1) * lineHeight) / 2
+  for (let i = 0; i < lines.length; i++) {
+    const y = top + i * lineHeight
+    ctx.strokeText(lines[i], canvas.width / 2, y)
+    ctx.fillText(lines[i], canvas.width / 2, y)
+  }
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.colorSpace = THREE.SRGBColorSpace
+  texture.anisotropy = 8
+  texture.needsUpdate = true
+  return texture
+}
+
+function SignFace({ texture, position, rotation }) {
+  return (
+    <mesh position={position} rotation={rotation} renderOrder={2}>
+      <planeGeometry args={[0.4, 0.25]} />
+      <meshBasicMaterial map={texture} transparent alphaTest={0.35} toneMapped={false} />
+    </mesh>
+  )
+}
+
+function Sign({ position, label }) {
   const { scene } = useGLTF('/models/ExtDecoration/sign.glb')
   const clone = useMemo(() => prepareClone(scene).clone, [scene])
+  const texture = useMemo(() => (label ? makeSignTexture(label) : null), [label])
+  useEffect(() => () => texture?.dispose(), [texture])
   return (
     <group position={position} scale={1.7}>
       <primitive object={clone} />
+      {texture && (
+        <>
+          <SignFace texture={texture} position={[0, 0.42, 0.072]} />
+          <SignFace texture={texture} position={[0, 0.42, -0.072]} rotation={[0, Math.PI, 0]} />
+        </>
+      )}
     </group>
   )
 }
@@ -115,11 +182,12 @@ export function MapBuilding({
   })
 
   const roof = size.y * sy
+  const sink = groundSink(Math.hypot(halfX, halfZ), 0.04)
 
   return (
-    <GlobeFrame x={position[0]} z={position[2]} yaw={rotation}>
+    <GlobeFrame x={position[0]} y={-sink} z={position[2]} yaw={rotation}>
       <group>
-        <group scale={[sx, sy, sz]} position={[0, 0.02, 0]}>
+        <group scale={[sx, sy, sz]}>
           <primitive object={clone} />
         </group>
 
@@ -132,7 +200,7 @@ export function MapBuilding({
           />
         )}
 
-        {marker && <Sign position={[halfX * 0.35 + 0.7, 0.02, halfZ * shrink + 0.05]} />}
+        {marker && <Sign label={label} position={[halfX * 0.35 + 0.7, 0, halfZ * shrink + 0.05]} />}
 
         <group ref={doorRef} position={doorLocal} />
         {marker && <DoorMarker position={[doorLocal[0], doorLocal[1], doorLocal[2]]} />}
