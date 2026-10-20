@@ -10,7 +10,7 @@ Todo el layout vive en `src/config/map.js`:
 
 | Export | Qué es |
 | --- | --- |
-| `buildings` | Casas, tiendas, rascacielos y los cuatro edificios con interacción |
+| `buildings` | Casas, tiendas, rascacielos y los edificios con cartel (estudio, Portfolio 3D, Shelvingit y Steak365) |
 | `paths` | Caminos de tierra. Cada punto es `[x, z]` |
 | `lamps` | Farolas `[x, z]` |
 | `fenceRuns` | Vallas, setos y cuerdas. `gate` abre un hueco |

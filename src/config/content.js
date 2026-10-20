@@ -45,16 +45,22 @@ export const projects = {
     tags: ['React Three Fiber', 'Rapier', 'Mundo 3D'],
     links: [{ label: 'GitHub', href: 'https://github.com/JuanAn-WD/Portfolio3D' }],
   },
-  tictactoe: {
-    id: 'tictactoe',
-    title: 'Tic Tac Toe',
+  shelvingit: {
+    id: 'shelvingit',
+    title: 'Shelvingit',
     description:
-      'Tres en raya en el navegador. Un proyecto anterior, más pequeño, de lógica de juego y UI.',
-    tags: ['React', 'Lógica de juego'],
+      'Biblioteca personal gamificada: busca libros, organízalos en tu estantería y sigue qué estás leyendo, qué quieres comprar y qué ya terminaste.',
+    tags: ['React', 'Django', 'PWA'],
     links: [
-      { label: 'Demo', href: 'https://tic-tac-toe-juanan-wd.vercel.app' },
-      { label: 'GitHub', href: 'https://github.com/JuanAn-WD/TicTacToe' },
+      { label: 'Demo', href: 'https://shelvingit.vercel.app' },
+      { label: 'GitHub', href: 'https://github.com/JuanAn-WD/ShelvingIt' },
     ],
+  },
+  steak365: {
+    id: 'steak365',
+    title: 'Steak365',
+    description: 'Proyecto de JuanAn.',
+    links: [],
   },
 }
 
