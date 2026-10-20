@@ -131,7 +131,7 @@ export default function App() {
             <InteractionBinder tooltip={tooltip} blocked={!!modalData || isFading || showIntro} />
             <Canvas
               id="experiencia"
-              shadows
+              shadows={{ type: THREE.PCFShadowMap }}
               dpr={[1, 1.5]}
               camera={{ position: [10, 10, 12], fov: 40 }}
               gl={{ antialias: true, powerPreference: 'high-performance' }}

@@ -46,6 +46,25 @@ function StreetLamp({ position = [0, 0, 0] }) {
   )
 }
 
+/** Solid village props used by the planet collision grid (flat coords + radius). */
+export const VILLAGE_BLOCKERS = [
+  { position: [-2, 0, -3], radius: 0.12 },
+  { position: [-4, 0, -5.5], radius: 0.12 },
+  { position: [3, 0, -1], radius: 0.12 },
+  { position: [6, 0, -2], radius: 0.12 },
+  { position: [3, 0, 6], radius: 0.12 },
+  { position: [6.5, 0, 8], radius: 0.22 },
+  { position: [3.8, 0, 9], radius: 0.26 },
+  { position: [6, 0, 9.5], radius: 0.20 },
+  { position: [5.5, 0, 10], radius: 0.48 },
+  { position: [3.5, 0, 10.5], radius: 0.43 },
+  { position: [-5.5, 0, -6], radius: 0.28 },
+  { position: [-6.5, 0, -7], radius: 0.16 },
+  { position: [-4, 0, -3], radius: 0.22 },
+  { position: [7, 0, 3], radius: 0.20 },
+  { position: [2.2, 0, 1.6], radius: 0.12 },
+]
+
 export function VillageDetails({ isWinter }) {
   return (
     <group>

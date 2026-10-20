@@ -44,7 +44,7 @@ export function Fireflies({ count = 24, isWinter = false, reducedMotion = false 
   }, [count, isWinter])
 
   return (
-    <Instances limit={count} range={count}>
+    <Instances limit={count}>
       <sphereGeometry args={[0.08, 8, 8]} />
       <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={2.0} toneMapped={false} />
       {fireflies.map((f) => (

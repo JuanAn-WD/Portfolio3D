@@ -64,10 +64,17 @@ function CloudPuff({ startLat, startLon, orbitSpeed, scale, heightAboveSurface }
   )
 }
 
+/** Max puffs per cloud (CloudPuff uses 4–6). Keep Instances capacity fixed — drei does not resize buffers when `limit` changes. */
+const PUFFS_PER_CLOUD = 7
+
 /**
  * A collection of clouds distributed across the globe surface.
+ * `capacity` sizes the GPU buffers once; `count` only controls how many clouds mount.
  */
-export function Clouds({ count = 16, isWinter = false }) {
+export function Clouds({ count = 16, capacity = 16, isWinter = false }) {
+  const safeCapacity = Math.max(count, capacity)
+  const maxInstances = safeCapacity * PUFFS_PER_CLOUD
+
   const clouds = useMemo(() => {
     const list = []
     let i = 0
@@ -90,11 +97,10 @@ export function Clouds({ count = 16, isWinter = false }) {
     return list
   }, [count])
 
-  const maxInstances = count * 7
-
   return (
     <group>
-      <Instances limit={maxInstances} range={maxInstances}>
+      {/* key remounts if capacity ever changes; avoid growing limit in place */}
+      <Instances key={maxInstances} limit={maxInstances}>
         <sphereGeometry args={[1, 12, 12]} />
         <meshStandardMaterial
           color={isWinter ? '#e2e8f0' : '#ffffff'}

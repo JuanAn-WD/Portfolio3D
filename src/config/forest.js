@@ -3,19 +3,54 @@ import { mulberry32 } from '../helpers/rng'
 export const FOREST_SEED = 2
 export const FOREST_ATTEMPTS = 380
 
+/**
+ * Horizontal collision radii at scale=1, calibrated from GLB vertex footprints
+ * (~0.85–0.95 × halfXZ). Trees use a trunk-biased radius (canopy is wider).
+ */
 export const DECO_HITBOX_RADIUS = {
-  tree: 0.85,
-  pine: 0.70,
-  'pine-small': 0.45,
-  rock: 0.60,
+  tree: 0.42,
+  pine: 0.38,
+  'pine-small': 0.26,
+  rock: 0.30,
   hedge: 0,
-  plant: 0.25,
+  plant: 0.22,
+  // type `stones` renders rocks.glb — same footprint as rock
   stones: 0.30,
+  // winter flower→stones.glb replacement
+  'stone-scatter': 0.34,
   mushrooms: 0,
   grass: 0,
   flowers: 0,
   'flowers-tall': 0,
   detail: 0,
+  crate: 0.24,
+  barrel: 0.25,
+  lamp: 0.12,
+  flag: 0.10,
+  parasol: 0.48,
+  pipe: 0.18,
+}
+
+/** Winter swaps some soft props to stones.glb — collision must follow the visible mesh. */
+export function colliderTypeFor(type, isWinter = false) {
+  if (isWinter && (type === 'flowers' || type === 'flowers-tall' || type === 'detail')) {
+    return 'stone-scatter'
+  }
+  return type
+}
+
+/** Place a point on the globe from flat village coords (same as GlobeBuilding / GlobeDetail). */
+export function flatToGlobePos(x, z, y = 0) {
+  const lat = z / 50
+  const lon = -x / 50
+  const r = 50 + y
+  const cx = Math.cos(lat)
+  const sx = Math.sin(lat)
+  const cz = Math.cos(lon)
+  const sz = Math.sin(lon)
+  const y1 = r * cx
+  const z1 = r * sx
+  return { x: -y1 * sz, y: y1 * cz, z: z1 }
 }
 
 export function decoPath(type, isWinter) {
@@ -82,23 +117,41 @@ export function generateDecorations(seed = FOREST_SEED) {
   return items
 }
 
-export function buildDecoGrid(decorations, cellSize = 5) {
+/**
+ * @param {Array} decorations procedural forest items
+ * @param {object} [opts]
+ * @param {boolean} [opts.isWinter]
+ * @param {Array<{position:[number,number,number], radius:number}>} [opts.extra] flat-space blockers (village)
+ * @param {number} [opts.cellSize]
+ */
+export function buildDecoGrid(decorations, opts = {}) {
+  const { isWinter = false, extra = [], cellSize = 5 } = typeof opts === 'number'
+    ? { cellSize: opts } // back-compat: buildDecoGrid(deco, 5)
+    : opts
+
   const blocking = decorations
-    .filter((d) => (DECO_HITBOX_RADIUS[d.type] ?? 0) > 0)
     .map((d) => {
-      const pos = { x: 0, y: 50, z: 0 }
-      // Rz(lon) * Rx(lat) * (0, 50, 0) — same as THREE.Euler(lat, 0, lon, 'XYZ')
+      const type = colliderTypeFor(d.type, isWinter)
+      const base = DECO_HITBOX_RADIUS[type] ?? 0
+      if (base <= 0) return null
       const cx = Math.cos(d.lat)
       const sx = Math.sin(d.lat)
       const cz = Math.cos(d.lon)
       const sz = Math.sin(d.lon)
       const y1 = 50 * cx
       const z1 = 50 * sx
-      pos.x = -y1 * sz
-      pos.y = y1 * cz
-      pos.z = z1
-      return { pos, radius: d.scale * DECO_HITBOX_RADIUS[d.type] }
+      return {
+        pos: { x: -y1 * sz, y: y1 * cz, z: z1 },
+        radius: d.scale * base,
+      }
     })
+    .filter(Boolean)
+
+  for (const item of extra) {
+    const [x, y, z] = item.position
+    if (!(item.radius > 0)) continue
+    blocking.push({ pos: flatToGlobePos(x, z, y || 0), radius: item.radius })
+  }
 
   const grid = new Map()
   for (const deco of blocking) {

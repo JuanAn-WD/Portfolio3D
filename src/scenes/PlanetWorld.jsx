@@ -15,13 +15,13 @@ import { Ocean } from '../components/Ocean'
 import { Clouds } from '../components/Clouds'
 import { Butterflies } from '../components/Butterflies'
 import { Fireflies } from '../components/Fireflies'
-import { VillageDetails } from '../components/VillageDetails'
+import { VillageDetails, VILLAGE_BLOCKERS } from '../components/VillageDetails'
 import { DayNightLighting } from '../components/DayNightLighting'
 import { ProceduralForest } from '../components/ProceduralForest'
 import { Fauna } from '../components/Fauna'
 
-const PLAYER_RADIUS = 0.65
-const BUILDING_RADIUS = 3.5
+/** Character capsule radius (Juanan ~scale 0.8) — keep tighter than visual so props feel Fair */
+const PLAYER_RADIUS = 0.45
 
 const _input = new THREE.Vector2()
 const _axis = new THREE.Vector3()
@@ -29,6 +29,7 @@ const _stepQ = new THREE.Quaternion()
 const _prevQ = new THREE.Quaternion()
 const _camGoal = new THREE.Vector3(0, 3.5, 6.5)
 const _hitP = new THREE.Vector3()
+const _hitOffset = new THREE.Vector3()
 
 export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, globeQuatRef, active = true }) {
   const globeRef = useRef()
@@ -84,7 +85,10 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, g
   }, [groundColor, isWinter])
 
   const decorations = useMemo(() => generateDecorations(FOREST_SEED), [])
-  const decoGrid = useMemo(() => buildDecoGrid(decorations), [decorations])
+  const decoGrid = useMemo(
+    () => buildDecoGrid(decorations, { isWinter, extra: VILLAGE_BLOCKERS }),
+    [decorations, isWinter]
+  )
 
   useLayoutEffect(() => {
     if (globeRef.current && globeQuatRef?.current) {
@@ -122,10 +126,18 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, g
       const tryRotate = (ax, az, amount) => {
         if (amount === 0 || !globeRef.current) return
 
-        for (const b of buildings) {
+        const buildingHitWorld = (b, out) => {
           const ref = buildingRefs.current[b.refKey]
+          if (!ref) return false
+          const [ox = 0, oy = 0, oz = 0] = b.hitOffset || [0, 0, 0]
+          _hitOffset.set(ox, oy, oz)
+          ref.localToWorld(out.copy(_hitOffset))
+          return true
+        }
+
+        for (const b of buildings) {
           if (!oldBuildingPos.current[b.refKey]) oldBuildingPos.current[b.refKey] = new THREE.Vector3()
-          if (ref) ref.getWorldPosition(oldBuildingPos.current[b.refKey])
+          buildingHitWorld(b, oldBuildingPos.current[b.refKey])
         }
 
         _prevQ.copy(globeRef.current.quaternion)
@@ -158,12 +170,11 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, g
 
         if (!hit) {
           for (const b of buildings) {
-            const ref = buildingRefs.current[b.refKey]
             const oldPos = oldBuildingPos.current[b.refKey]
-            if (!ref || !oldPos) continue
-            ref.getWorldPosition(_hitP)
+            if (!buildingHitWorld(b, _hitP) || !oldPos) continue
+            const radius = (b.hitRadius ?? 2.5) + PLAYER_RADIUS
             const newDist = _hitP.length()
-            if (newDist < BUILDING_RADIUS && newDist < oldPos.length()) {
+            if (newDist < radius && newDist < oldPos.length()) {
               hit = true
               break
             }
@@ -209,7 +220,8 @@ export function PlanetWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, g
         </mesh>
 
         <Ocean radius={50} isWinter={isWinter} reducedMotion={reducedMotion} />
-        <Clouds count={lifeReady ? 16 : 10} isWinter={isWinter} />
+        {/* capacity fixed: growing drei Instances.limit overflows GPU buffers (bufferSubData) */}
+        <Clouds count={lifeReady ? 16 : 10} capacity={16} isWinter={isWinter} />
 
         <GlobePath start={[0, 0]} end={[-5, -7]} steps={8} isWinter={isWinter} />
         <GlobePath start={[0, 0]} end={[8, -3]} steps={10} isWinter={isWinter} />
