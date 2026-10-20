@@ -24,7 +24,7 @@ export function BrandIntro({ visible, onEnter }) {
           className="btn-primary brand-intro-cta"
           onClick={onEnter}
         >
-          Entrar al pueblo
+          Entrar al planeta
         </button>
       </div>
     </div>

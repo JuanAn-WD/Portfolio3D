@@ -44,6 +44,7 @@ export default function App() {
   const [introOpen, setIntroOpen] = useState(() => sessionStorage.getItem('intro-dismissed') !== '1')
   const isCoarse = useTouchUi()
   const closeBtnRef = useRef(null)
+  const globeQuatRef = useRef(new THREE.Quaternion())
   const reducedMotion = usePrefersReducedMotion()
 
   const onAssetsReady = useCallback(() => setAssetsReady(true), [])
@@ -132,7 +133,7 @@ export default function App() {
               id="experiencia"
               shadows={{ type: THREE.PCFShadowMap }}
               dpr={[1, 1.5]}
-              camera={{ position: [0, 6.2, 16], fov: 42 }}
+              camera={{ position: [0, 3.5, 6.5], fov: 40 }}
               gl={{ antialias: true, powerPreference: 'high-performance' }}
               aria-label={`Portfolio 3D de ${profile.name}`}
             >
@@ -143,6 +144,7 @@ export default function App() {
                   <VillageWorld
                     active={sceneMode === 'island'}
                     isFrozen={frozen || sceneMode !== 'island'}
+                    globeQuatRef={globeQuatRef}
                     onEnterHouse={() => switchScene('interior')}
                     onOpenModal={setModalData}
                     setTooltip={setTooltip}

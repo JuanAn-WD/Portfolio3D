@@ -1,12 +1,11 @@
-import { useMemo, useRef } from 'react'
+import { useLayoutEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Html, useGLTF } from '@react-three/drei'
-import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import * as THREE from 'three'
 import { Chimney } from './SmokeParticle'
+import { GlobeFrame } from './GlobeFrame'
 
 const _door = new THREE.Vector3()
-const _player = new THREE.Vector3()
 
 function prepareClone(scene) {
   const clone = scene.clone(true)
@@ -49,8 +48,8 @@ function Sign({ position }) {
 }
 
 /**
- * Edificio apoyado en el suelo, con caja de colisión y, si tiene acción,
- * un punto de interacción delante de la cara +Z.
+ * Edificio sobre el planeta. La elipse de choque la registra `onHitbox`
+ * (el personaje y los animales la consultan). La puerta es el eje local +Z.
  */
 export function MapBuilding({
   id,
@@ -64,9 +63,9 @@ export function MapBuilding({
   chimney,
   action,
   onActivate,
-  playerRef,
+  onHitbox,
   enabled = true,
-  interactDistance = 2.15,
+  interactDistance = 2.5,
 }) {
   const { scene } = useGLTF(model)
   const { clone, size } = useMemo(() => prepareClone(scene), [scene])
@@ -82,8 +81,21 @@ export function MapBuilding({
   const shrink = 0.86
   const doorLocal = [0.15, 1.15, halfZ * shrink + 0.7]
 
+  useLayoutEffect(() => {
+    if (!onHitbox) return undefined
+    return onHitbox({
+      id,
+      x: position[0],
+      z: position[2],
+      yaw: rotation,
+      halfX: halfX * 0.88,
+      halfZ: halfZ * 0.88,
+      halfY,
+    })
+  }, [onHitbox, id, position, rotation, halfX, halfY, halfZ])
+
   useFrame(() => {
-    if (!action || !doorRef.current || !playerRef?.current) return
+    if (!action || !doorRef.current) return
     if (!enabled) {
       if (wasClose.current) {
         onActivate?.({ id, close: false })
@@ -92,10 +104,7 @@ export function MapBuilding({
       return
     }
     doorRef.current.getWorldPosition(_door)
-    _player.copy(playerRef.current)
-    const dx = _player.x - _door.x
-    const dz = _player.z - _door.z
-    const close = dx * dx + dz * dz < interactDistance * interactDistance
+    const close = _door.length() < interactDistance
     if (close && !wasClose.current) {
       onActivate?.({ id, tooltip, close: true })
       wasClose.current = true
@@ -108,8 +117,8 @@ export function MapBuilding({
   const roof = size.y * sy
 
   return (
-    <>
-      <group position={position} rotation={[0, rotation, 0]}>
+    <GlobeFrame x={position[0]} z={position[2]} yaw={rotation}>
+      <group>
         <group scale={[sx, sy, sz]} position={[0, 0.02, 0]}>
           <primitive object={clone} />
         </group>
@@ -134,10 +143,6 @@ export function MapBuilding({
           </Html>
         )}
       </group>
-
-      <RigidBody type="fixed" colliders={false} position={position} rotation={[0, rotation, 0]}>
-        <CuboidCollider args={[halfX * shrink, halfY, halfZ * shrink]} position={[0, halfY + 0.02, 0]} />
-      </RigidBody>
-    </>
+    </GlobeFrame>
   )
 }

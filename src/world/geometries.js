@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { GLOBE_RADIUS, writeFlatToGlobe } from './globe'
 
 const grass = new THREE.Color('#3f9a4e')
 const grassDark = new THREE.Color('#2d7a3e')
@@ -114,5 +115,54 @@ export function createRibbonGeometry(paths, y = 0.04) {
   geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3))
   geo.setIndex(indices)
   geo.computeBoundingSphere()
+  return geo
+}
+
+/** Lleva una malla plana (x, altura, z) a la superficie del planeta. */
+export function projectOntoGlobe(geometry) {
+  const pos = geometry.attributes.position
+  const v = new THREE.Vector3()
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i)
+    writeFlatToGlobe(v.x, v.z, v.y, v)
+    pos.setXYZ(i, v.x, v.y, v.z)
+  }
+  pos.needsUpdate = true
+  geometry.computeVertexNormals()
+  geometry.computeBoundingSphere()
+  return geometry
+}
+
+/** Disco del suelo (la plaza) ya proyectado sobre la esfera. */
+export function createDiscGeometry(radius, lift = 0.06) {
+  const geo = new THREE.CircleGeometry(radius, 48)
+  geo.rotateX(-Math.PI / 2)
+  const pos = geo.attributes.position
+  for (let i = 0; i < pos.count; i++) pos.setY(i, lift)
+  return projectOntoGlobe(geo)
+}
+
+/** Planeta con hierba arriba y arena hacia el mar. El polo norte es +Y. */
+export function createPlanetGeometry(isWinter) {
+  const geo = new THREE.SphereGeometry(GLOBE_RADIUS, 64, 48)
+  const pos = geo.attributes.position
+  const colors = new Float32Array(pos.count * 3)
+  const grassA = new THREE.Color(isWinter ? '#e6edf2' : '#3f9a4e')
+  const grassB = new THREE.Color(isWinter ? '#c5ced6' : '#2d7a3e')
+  const sandA = new THREE.Color(isWinter ? '#f4f7fa' : '#e7d3a1')
+  const sandB = new THREE.Color(isWinter ? '#d5dee6' : '#d2b57a')
+  const tint = new THREE.Color()
+
+  for (let i = 0; i < pos.count; i++) {
+    const y = pos.getY(i) / GLOBE_RADIUS
+    const n = hash(pos.getX(i), pos.getZ(i))
+    if (y > 0.5) tint.copy(n > 0.5 ? grassA : grassB)
+    else if (y > 0.36) tint.copy(sandA).lerp(n > 0.5 ? grassA : grassB, (y - 0.36) / 0.14)
+    else tint.copy(n > 0.45 ? sandA : sandB)
+    colors[i * 3] = tint.r
+    colors[i * 3 + 1] = tint.g
+    colors[i * 3 + 2] = tint.b
+  }
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
   return geo
 }

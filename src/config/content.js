@@ -2,9 +2,9 @@ export const profile = {
   name: 'JuanAn',
   role: 'Front-end · experiencias 3D',
   github: 'https://github.com/JuanAn-WD',
-  tagline: 'Un pueblo costero para recorrer: proyectos, estudio y un rincón sobre mí.',
+  tagline: 'Un planeta redondo con un pueblo para recorrer: proyectos, estudio y un rincón sobre mí.',
   summary:
-    'Construyo experiencias web interactivas. Este pueblo es mi portfolio: entra al estudio para ver el setup y acércate a los edificios marcados para abrir proyectos reales.',
+    'Construyo experiencias web interactivas. Este planeta es mi portfolio: entra al estudio para ver el setup y acércate a los edificios marcados para abrir proyectos reales.',
 }
 
 export const projects = {
@@ -41,7 +41,7 @@ export const projects = {
     id: 'portfolio3d',
     title: 'Portfolio 3D',
     description:
-      'Pueblo costero explorable: edificios con fichas de proyecto, un estudio interior con físicas y ciclo día/noche.',
+      'Planeta esférico explorable: el personaje se queda arriba y el mundo gira debajo. El pueblo tiene edificios con ficha, un estudio interior y ciclo día/noche.',
     tags: ['React Three Fiber', 'Rapier', 'Mundo 3D'],
     links: [{ label: 'GitHub', href: 'https://github.com/JuanAn-WD/Portfolio3D' }],
   },

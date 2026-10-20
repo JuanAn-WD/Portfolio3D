@@ -1,9 +1,12 @@
 import { mulberry32 } from '../helpers/rng'
 
 /**
- * Mapa del pueblo. Para mover algo, edita las listas de abajo y recarga.
+ * Mapa del pueblo, colocado sobre el planeta (radio 50).
+ * Para mover algo, edita las listas de abajo y recarga.
  *
- * Ejes: X hacia el este, Z hacia el sur, Y hacia arriba. El suelo está en y = 0.
+ * Ejes: X hacia el este, Z hacia el sur, Y hacia arriba. El suelo es la esfera:
+ * estas coordenadas son metros de arco desde el polo. El personaje se queda
+ * arriba y el planeta gira debajo, como antes.
  * `rotation` es un giro en radianes alrededor de Y. `face(dx, dz)` apunta la
  * puerta (eje local +Z del modelo, ya centrado) hacia ese vector.
  *
@@ -30,9 +33,10 @@ export const ISLAND = {
 }
 
 export const PLAYER = {
-  scale: 1.5,
-  /** y alto para caer al suelo al aparecer */
-  spawn: [0, 2.4, 7.6],
+  /** En el planeta se ve a la escala del treadmill original. */
+  scale: 0.85,
+  /** El polo del planeta se gira para que este punto quede bajo los pies. */
+  spawn: [0, 0, 7.6],
   speed: 4.5,
 }
 
@@ -303,7 +307,7 @@ export const clearings = [
 
 /** Props colocados a mano. `hit` es radio de tronco; `box` es [ancho, alto, fondo] en metros. */
 export const props = [
-  { model: M.flag, position: [0, 0, 0], rotation: 0.5, scale: 3.5, hit: 0.16, hitHeight: 2.4, shadow: true },
+  { model: M.flag, position: [2.4, 0, 2.2], rotation: 0.5, scale: 3.5, hit: 0.2, hitHeight: 2.4, shadow: true },
   { model: M.parasolA, position: [-3.2, 0, 20.2], rotation: 0.3, scale: 4.8, hit: 0.28, hitHeight: 2, shadow: true },
   { model: M.parasolB, position: [5.6, 0, 20.6], rotation: 1.1, scale: 4.5, hit: 0.28, hitHeight: 2, shadow: true },
   { model: M.crate, position: [17.4, 0, 4.6], rotation: 0.4, scale: 1.55, box: [0.78, 0.78, 0.78], shadow: true },
@@ -334,6 +338,7 @@ for (let i = 0; i < 8; i++) {
     rotation: a,
     scale: i % 2 === 0 ? 1.55 : 1.35,
     shadow: false,
+    hit: 0.28,
   })
 }
 
@@ -349,8 +354,8 @@ export const scatterZones = [
   { model: M.rocks, count: 16, x: -37, z: -29, w: 74, d: 58, scale: [1.35, 2.15], hit: 0.42, hitHeight: 0.55, shadow: true, seed: 18, band: [0.78, 0.96] },
   { model: M.grass, count: 28, x: -32, z: -22, w: 62, d: 42, scale: [1.15, 1.75], seed: 21 },
   { model: M.flowers, count: 10, x: -26, z: -14, w: 48, d: 30, scale: [1.25, 1.7], seed: 24 },
-  { model: M.mushrooms, count: 6, x: -14, z: -26, w: 26, d: 7, scale: [1.05, 1.45], seed: 28 },
-  { model: M.plant, count: 7, x: -20, z: 4, w: 12, d: 12, scale: [1.25, 1.7], seed: 33 },
+  { model: M.mushrooms, count: 6, x: -14, z: -26, w: 26, d: 7, scale: [1.05, 1.45], hit: 0.18, seed: 28 },
+  { model: M.plant, count: 7, x: -20, z: 4, w: 12, d: 12, scale: [1.25, 1.7], hit: 0.26, seed: 33 },
 ]
 
 export const animals = [
@@ -414,7 +419,10 @@ function expandFenceRun(run) {
   const n = Math.max(1, Math.round(length / scale))
   const items = []
   const solid = run.solid !== false
-  const height = (model === M.hedge ? 0.4 : model === M.rope ? 0.3 : 0.4) * scale
+  const hedge = model === M.hedge
+  const rope = model === M.rope
+  const height = (hedge ? 0.4 : rope ? 0.3 : 0.4) * scale
+  const spacing = length / n
 
   for (let i = 0; i < n; i++) {
     const t = (i + 0.5) / n
@@ -426,8 +434,9 @@ function expandFenceRun(run) {
       position: [x, 0, z],
       rotation: yaw,
       scale,
-      shadow: solid,
-      box: solid ? [scale, height, 0.22] : null,
+      shadow: solid || hedge,
+      box: solid ? [spacing * 1.05, height, 0.42] : null,
+      hit: hedge ? 0.34 * scale : rope ? 0.16 * scale : 0,
     })
   }
   return items

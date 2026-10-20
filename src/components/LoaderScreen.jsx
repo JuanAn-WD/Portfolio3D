@@ -21,7 +21,7 @@ export function LoaderScreen({ onComplete }) {
     <div className="loader-screen" role="status" aria-live="polite">
       <div className="loader-card">
         <p className="loader-brand">{profile.name}</p>
-        <p className="loader-title">Cargando el pueblo</p>
+        <p className="loader-title">Cargando el planeta</p>
         <div className="loader-bar" aria-hidden="true">
           <span style={{ width: `${pct}%` }} />
         </div>

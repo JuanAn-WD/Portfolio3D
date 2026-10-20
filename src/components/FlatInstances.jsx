@@ -1,6 +1,7 @@
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
+import { writeFlatToGlobe, writeSurfaceQuat } from '../world/globe'
 
 const _dummy = new THREE.Object3D()
 
@@ -30,6 +31,8 @@ export function FlatInstances({ model, items, shadow = false }) {
   }, [scene])
 
   useLayoutEffect(() => {
+    const globePoint = new THREE.Vector3()
+    const quat = new THREE.Quaternion()
     parts.forEach((part, pi) => {
       const mesh = meshRefs.current[pi]
       if (!mesh) return
@@ -39,8 +42,11 @@ export function FlatInstances({ model, items, shadow = false }) {
         const sx = Array.isArray(scale) ? scale[0] : scale
         const sy = Array.isArray(scale) ? scale[1] : scale
         const sz = Array.isArray(scale) ? scale[2] : scale
-        _dummy.position.set(item.position[0], item.position[1] + 0.012, item.position[2])
-        _dummy.rotation.set(0, item.rotation || 0, 0)
+        const [x, , z] = item.position
+        writeFlatToGlobe(x, z, 0.03, globePoint)
+        writeSurfaceQuat(x, z, item.rotation || 0, quat)
+        _dummy.position.copy(globePoint)
+        _dummy.quaternion.copy(quat)
         _dummy.scale.set(sx, sy, sz)
         _dummy.updateMatrix()
         _dummy.matrix.multiply(part.local)

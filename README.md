@@ -1,8 +1,8 @@
 # Portfolio 3D
 
-Pueblo costero explorable, hecho con **React Three Fiber**, **Three.js** y **Rapier**.
+Planeta esférico explorable, hecho con **React Three Fiber**, **Three.js** y **Rapier** (el interior).
 
-El personaje camina por la isla (WASD en el mundo: W hacia el norte). Hay edificios con fichas de proyecto, un estudio interior y un ciclo día/noche. Un muro invisible en la orilla evita caer al agua.
+El personaje se queda arriba y el planeta gira bajo sus pies, como el treadmill original. En la cima está el pueblo: edificios con ficha, estudio interior y ciclo día/noche. Edificios, árboles, vallas, farolas y animales tienen volumen: ni el personaje ni la fauna los atraviesan. El mar, por debajo de cierta latitud, tampoco se puede pisar.
 
 ## Cómo está organizado el mapa
 
@@ -33,7 +33,7 @@ El estudio (`action: 'enterHouse'`) abre el interior, que sigue definido en `int
 
 ## Controles
 
-- **WASD / flechas:** mover (W hacia el norte, la cámara se queda al sur del personaje)
+- **WASD / flechas:** girar el planeta (W trae lo que hay delante; la cámara se queda fija detrás del personaje)
 - **E** o clic en el tooltip: interactuar
 - **Esc:** cerrar ficha
 - En táctil: stick inferior izquierdo

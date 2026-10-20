@@ -1,30 +1,43 @@
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useKeyboardControls } from '@react-three/drei'
-import { CapsuleCollider, CuboidCollider, CylinderCollider, Physics, RigidBody } from '@react-three/rapier'
 import * as THREE from 'three'
 
 import { dampAngle } from '../helpers/dampAngle'
 import { usePrefersReducedMotion } from '../helpers/usePrefersReducedMotion'
 import { useMovement } from '../context/MovementContext'
 import { projects } from '../config/content'
-import { ISLAND, PLAYER, buildMap, isWinterMonth } from '../config/map'
-import { createIslandGeometry, createRibbonGeometry } from '../world/geometries'
+import { PLAYER, buildMap, isWinterMonth } from '../config/map'
+import { createDiscGeometry, createPlanetGeometry, createRibbonGeometry, projectOntoGlobe } from '../world/geometries'
+import {
+  GLOBE_RADIUS,
+  PLAYER_RADIUS,
+  SEA_LIMIT,
+  SPIN,
+  pointBlocked,
+  spheresFromColliders,
+  writeSurfaceQuat,
+} from '../world/globe'
 import { Juanan } from '../Juanan'
 import { DayNightLighting } from '../components/DayNightLighting'
 import { FlatInstances } from '../components/FlatInstances'
 import { MapBuilding } from '../components/MapBuilding'
 import { Critter } from '../components/Critter'
 import { StreetLamp } from '../components/StreetLamp'
+import { GlobeFrame } from '../components/GlobeFrame'
+import { Ocean } from '../components/Ocean'
 
 const VISTAS = {
-  mapa: { pos: [14, 32, 30], look: [0, 0.5, -2] },
-  cenital: { pos: [0.2, 68, 0.2], look: [0, 0, 0] },
+  mapa: { pos: [62, -6, 70], look: [0, -36, 0] },
+  cenital: { pos: [0.4, 78, 18], look: [0, -28, 0] },
 }
 
-const _camGoal = new THREE.Vector3()
-const _look = new THREE.Vector3()
-const _offset = new THREE.Vector3(0, 5.15, 8.35)
+const _axis = new THREE.Vector3()
+const _stepQ = new THREE.Quaternion()
+const _prevQ = new THREE.Quaternion()
+const _playerLocal = new THREE.Vector3()
+const _camGoal = new THREE.Vector3(0, 3.5, 6.5)
+const _spawnQ = new THREE.Quaternion()
 
 function readVista() {
   if (typeof window === 'undefined') return null
@@ -32,64 +45,19 @@ function readVista() {
   return VISTAS[value] ? value : null
 }
 
-function Water({ reducedMotion, isWinter }) {
-  const uniforms = useMemo(() => ({
-    uTime: { value: 0 },
-    uColorA: { value: new THREE.Color(isWinter ? '#7f96a8' : '#127a96') },
-    uColorB: { value: new THREE.Color(isWinter ? '#415868' : '#0c3d52') },
-  }), [isWinter])
-
-  useFrame((state) => {
-    if (!reducedMotion) uniforms.uTime.value = state.clock.elapsedTime
-  })
-
-  return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.7, 0]}>
-      <circleGeometry args={[120, 72]} />
-      <shaderMaterial
-        transparent
-        depthWrite
-        uniforms={uniforms}
-        vertexShader={`
-          uniform float uTime;
-          varying vec2 vUv;
-          void main() {
-            vUv = uv;
-            vec3 pos = position;
-            float wave = sin(pos.x * 0.18 + uTime * 0.8) * cos(pos.y * 0.16 + uTime * 0.55);
-            pos.z += wave * 0.08;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-          }
-        `}
-        fragmentShader={`
-          uniform vec3 uColorA;
-          uniform vec3 uColorB;
-          varying vec2 vUv;
-          void main() {
-            float d = distance(vUv, vec2(0.5));
-            vec3 col = mix(uColorA, uColorB, smoothstep(0.05, 0.48, d));
-            gl_FragColor = vec4(col, 0.94);
-          }
-        `}
-      />
-    </mesh>
-  )
-}
-
-function SkyClouds({ reducedMotion }) {
+function PlanetClouds({ reducedMotion }) {
   const group = useRef()
   const clouds = useMemo(() => [
-    { p: [-22, 15.5, -12], s: 1.15 },
-    { p: [6, 17.5, -18], s: 1.45 },
-    { p: [24, 14.8, 4], s: 0.95 },
-    { p: [-10, 16.2, 16], s: 1.2 },
-    { p: [16, 18.2, 20], s: 0.85 },
+    { p: [-18, 62, -8], s: 1.15 },
+    { p: [8, 64, -16], s: 1.4 },
+    { p: [22, 60, 6], s: 0.95 },
+    { p: [-12, 63, 18], s: 1.15 },
+    { p: [14, 66, 22], s: 0.85 },
   ], [])
 
   useFrame((_, delta) => {
     if (!group.current || reducedMotion) return
-    group.current.position.x += delta * 0.4
-    if (group.current.position.x > 36) group.current.position.x = -36
+    group.current.rotation.y += delta * 0.012
   })
 
   return (
@@ -114,174 +82,78 @@ function SkyClouds({ reducedMotion }) {
   )
 }
 
-function IslandVisual({ geometry }) {
-  return (
-    <mesh geometry={geometry} receiveShadow>
-      <meshStandardMaterial vertexColors roughness={0.94} metalness={0} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-    </mesh>
+export function VillageWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, globeQuatRef, active = true }) {
+  const isWinter = useMemo(() => isWinterMonth(), [])
+  const map = useMemo(() => buildMap(isWinter), [isWinter])
+  const planetGeo = useMemo(() => createPlanetGeometry(isWinter), [isWinter])
+  const pathGeo = useMemo(() => projectOntoGlobe(createRibbonGeometry(map.paths, 0.08)), [map.paths])
+  const pathEdgeGeo = useMemo(
+    () => projectOntoGlobe(createRibbonGeometry(map.paths.map((path) => ({ ...path, width: path.width + 0.45 })), 0.05)),
+    [map.paths],
   )
-}
-
-function WallRing() {
-  const segments = useMemo(() => {
-    const list = []
-    const n = 72
-    const rx = ISLAND.rx * ISLAND.wall
-    const rz = ISLAND.rz * ISLAND.wall
-    for (let i = 0; i < n; i++) {
-      const a0 = (i / n) * Math.PI * 2
-      const a1 = ((i + 1) / n) * Math.PI * 2
-      const x0 = Math.cos(a0) * rx
-      const z0 = Math.sin(a0) * rz
-      const x1 = Math.cos(a1) * rx
-      const z1 = Math.sin(a1) * rz
-      const dx = x1 - x0
-      const dz = z1 - z0
-      const len = Math.hypot(dx, dz)
-      list.push({
-        position: [(x0 + x1) / 2, ISLAND.wallHeight / 2, (z0 + z1) / 2],
-        rotation: Math.atan2(-dz, dx),
-        args: [len / 2 + 0.15, ISLAND.wallHeight / 2, 0.42],
-      })
-    }
+  const plazaGeo = useMemo(() => createDiscGeometry(5.4, 0.07), [])
+  const spheres = useMemo(() => {
+    const list = spheresFromColliders(map.colliders)
+    for (const lamp of map.lamps) list.push({ x: lamp[0], z: lamp[1], radius: 0.22 })
     return list
-  }, [])
+  }, [map])
 
-  return segments.map((seg, i) => (
-    <RigidBody key={i} type="fixed" colliders={false} position={seg.position} rotation={[0, seg.rotation, 0]}>
-      <CuboidCollider args={seg.args} />
-    </RigidBody>
-  ))
-}
-
-function Explorer({ frozen, active, playerRef, anchorRef, vista, reducedMotion }) {
-  const body = useRef()
-  const visual = useRef()
-  const facing = useRef(Math.PI)
+  const reducedMotion = usePrefersReducedMotion()
+  const vista = useMemo(() => readVista(), [])
+  const globeRef = useRef()
+  const buildingsRef = useRef([])
+  const worldRef = useRef({
+    spheres,
+    buildings: buildingsRef.current,
+    actors: [],
+    player: new THREE.Vector3(0, GLOBE_RADIUS, 0),
+    playerRadius: PLAYER_RADIUS,
+  })
   const [, getKeys] = useKeyboardControls()
   const { axes } = useMovement()
   const [anim, setAnim] = useState('idle')
-  const snapped = useRef(false)
-
-  useFrame((state, delta) => {
-    const dt = Math.min(delta, 0.05)
-    if (!active) {
-      snapped.current = false
-      return
-    }
-
-    const pos = body.current?.translation()
-    if (pos) {
-      if (pos.y < -3 && body.current) {
-        body.current.setTranslation({ x: PLAYER.spawn[0], y: PLAYER.spawn[1], z: PLAYER.spawn[2] }, true)
-        body.current.setLinvel({ x: 0, y: 0, z: 0 }, true)
-      }
-      playerRef.current.set(pos.x, pos.y, pos.z)
-      if (!vista) anchorRef.current.set(pos.x, 0, pos.z)
-    }
-
-    const view = vista ? VISTAS[vista] : null
-    if (view) {
-      state.camera.position.set(view.pos[0], view.pos[1], view.pos[2])
-      state.camera.lookAt(view.look[0], view.look[1], view.look[2])
-    } else if (pos) {
-      _camGoal.set(pos.x, pos.y, pos.z).add(_offset)
-      _look.set(pos.x, pos.y + 1.05, pos.z)
-      if (!snapped.current) {
-        state.camera.position.copy(_camGoal)
-        snapped.current = true
-      } else {
-        const k = 1 - Math.exp(-3.4 * dt)
-        state.camera.position.lerp(_camGoal, reducedMotion ? 1 : k)
-      }
-      state.camera.lookAt(_look)
-    }
-
-    if (!body.current) return
-    if (frozen) {
-      const linvel = body.current.linvel()
-      body.current.setLinvel({ x: 0, y: linvel.y, z: 0 }, true)
-      if (anim !== 'idle') setAnim('idle')
-      return
-    }
-
-    const keys = getKeys()
-    let tx = axes.x
-    let tz = axes.z
-    if (keys.forward) tz -= 1
-    if (keys.backward) tz += 1
-    if (keys.left) tx -= 1
-    if (keys.right) tx += 1
-    const moving = tx !== 0 || tz !== 0
-    if (moving) {
-      const len = Math.hypot(tx, tz) || 1
-      tx = (tx / len) * PLAYER.speed
-      tz = (tz / len) * PLAYER.speed
-      facing.current = dampAngle(facing.current, Math.atan2(tx, tz), 14, dt)
-      if (anim !== 'walk') setAnim('walk')
-    } else if (anim !== 'idle') {
-      setAnim('idle')
-    }
-
-    const linvel = body.current.linvel()
-    body.current.setLinvel({
-      x: THREE.MathUtils.damp(linvel.x, tx, 14, dt),
-      y: linvel.y,
-      z: THREE.MathUtils.damp(linvel.z, tz, 14, dt),
-    }, true)
-    if (visual.current) visual.current.rotation.y = facing.current
-  })
-
-  return (
-    <RigidBody
-      ref={body}
-      type="dynamic"
-      position={PLAYER.spawn}
-      enabledRotations={[false, false, false]}
-      linearDamping={0.5}
-      friction={1}
-      canSleep={false}
-      colliders={false}
-    >
-      <CapsuleCollider args={[0.32, 0.28]} position={[0, 0.6, 0]} />
-      <group ref={visual}>
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
-          <circleGeometry args={[0.42, 16]} />
-          <meshBasicMaterial color="#000" transparent opacity={0.22} depthWrite={false} />
-        </mesh>
-        <Juanan animationName={anim} scale={PLAYER.scale} />
-      </group>
-    </RigidBody>
-  )
-}
-
-export function VillageWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, active = true }) {
-  const isWinter = useMemo(() => isWinterMonth(), [])
-  const map = useMemo(() => buildMap(isWinter), [isWinter])
-  const islandGeo = useMemo(() => createIslandGeometry(ISLAND.rx, ISLAND.rz), [])
-  const pathGeo = useMemo(() => createRibbonGeometry(map.paths, 0.05), [map.paths])
-  const pathEdgeGeo = useMemo(
-    () => createRibbonGeometry(map.paths.map((path) => ({ ...path, width: path.width + 0.45 })), 0.032),
-    [map.paths],
-  )
-  const reducedMotion = usePrefersReducedMotion()
-  const vista = useMemo(() => readVista(), [])
-  const playerRef = useRef(new THREE.Vector3(...PLAYER.spawn))
-  const anchorRef = useRef(new THREE.Vector3())
   const [lifeReady, setLifeReady] = useState(false)
-  const fog = useMemo(() => new THREE.Fog(isWinter ? '#b7c3ce' : '#7eb8c9', 32, 84), [isWinter])
+  const playerRot = useRef(Math.PI)
+  const playerVisualRef = useRef()
+  const fog = useMemo(() => new THREE.Fog(isWinter ? '#b7c3ce' : '#7eb8c9', 58, 130), [isWinter])
 
   useEffect(() => () => {
-    islandGeo.dispose()
+    planetGeo.dispose()
     pathGeo.dispose()
     pathEdgeGeo.dispose()
-  }, [islandGeo, pathGeo, pathEdgeGeo])
+    plazaGeo.dispose()
+  }, [planetGeo, pathGeo, pathEdgeGeo, plazaGeo])
 
   useEffect(() => {
     if (!active || lifeReady) return undefined
     const id = window.setTimeout(() => setLifeReady(true), reducedMotion ? 0 : 700)
     return () => window.clearTimeout(id)
   }, [active, reducedMotion, lifeReady])
+
+  useLayoutEffect(() => {
+    const globe = globeRef.current
+    if (!globe) return
+    const stored = globeQuatRef?.current
+    const fresh = !stored || (Math.abs(stored.x) < 1e-6 && Math.abs(stored.y) < 1e-6 && Math.abs(stored.z) < 1e-6 && Math.abs(stored.w) > 0.999)
+    if (fresh) {
+      writeSurfaceQuat(PLAYER.spawn[0], PLAYER.spawn[2], 0, _spawnQ)
+      globe.quaternion.copy(_spawnQ).invert()
+    } else {
+      globe.quaternion.copy(stored)
+    }
+    globe.updateMatrixWorld(true)
+    _playerLocal.set(0, 0, 0)
+    globe.worldToLocal(_playerLocal)
+    worldRef.current.player.copy(_playerLocal)
+  }, [globeQuatRef])
+
+  const registerHitbox = useCallback((hit) => {
+    buildingsRef.current.push(hit)
+    return () => {
+      buildingsRef.current = buildingsRef.current.filter((item) => item.id !== hit.id)
+      worldRef.current.buildings = buildingsRef.current
+    }
+  }, [])
 
   const handleActivate = useCallback((event) => {
     if (!event.close) {
@@ -300,13 +172,79 @@ export function VillageWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, 
     })
   }, [map.buildings, onEnterHouse, onOpenModal, setTooltip])
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
+    const world = worldRef.current
+    world.spheres = spheres
+    world.buildings = buildingsRef.current
+    const globe = globeRef.current
+    if (globe && globeQuatRef?.current) globeQuatRef.current.copy(globe.quaternion)
+
     if (!active) {
       if (state.scene.fog === fog) state.scene.fog = null
       return
     }
     state.scene.fog = fog
-  })
+
+    const view = vista ? VISTAS[vista] : null
+    if (view) {
+      state.camera.position.set(view.pos[0], view.pos[1], view.pos[2])
+      state.camera.lookAt(view.look[0], view.look[1], view.look[2])
+      return
+    }
+
+    state.camera.position.lerp(_camGoal, 0.1)
+    state.camera.lookAt(0, 0.8, 0)
+
+    const d = Math.min(delta, 0.05)
+    if (!globe || isFrozen) {
+      if (anim !== 'idle') setAnim('idle')
+      return
+    }
+
+    const keys = getKeys()
+    let tx = axes.x
+    let tz = axes.z
+    if (keys.forward) tz -= 1
+    if (keys.backward) tz += 1
+    if (keys.left) tx -= 1
+    if (keys.right) tx += 1
+
+    const tryRotate = (ax, az, amount) => {
+      if (amount === 0) return
+      _prevQ.copy(globe.quaternion)
+      _axis.set(ax, 0, az).normalize()
+      _stepQ.setFromAxisAngle(_axis, amount * SPIN * d)
+      globe.quaternion.premultiply(_stepQ)
+      globe.updateMatrixWorld(true)
+      _playerLocal.set(0, 0, 0)
+      globe.worldToLocal(_playerLocal)
+      const wet = _playerLocal.y / GLOBE_RADIUS < SEA_LIMIT
+      const hit = wet || pointBlocked(_playerLocal, PLAYER_RADIUS, 'player', world)
+      if (hit) {
+        globe.quaternion.copy(_prevQ)
+        globe.updateMatrixWorld(true)
+      }
+    }
+
+    if (tx !== 0 || tz !== 0) {
+      const len = Math.hypot(tx, tz) || 1
+      tx /= len
+      tz /= len
+      tryRotate(-Math.sign(tz), 0, Math.abs(tz))
+      tryRotate(0, Math.sign(tx), Math.abs(tx))
+      playerRot.current = dampAngle(playerRot.current, Math.atan2(tx, tz), 14, d)
+      if (anim !== 'walk') setAnim('walk')
+    } else if (anim !== 'idle') {
+      setAnim('idle')
+    }
+
+    if (globe) {
+      _playerLocal.set(0, 0, 0)
+      globe.worldToLocal(_playerLocal)
+      world.player.copy(_playerLocal)
+    }
+    if (playerVisualRef.current) playerVisualRef.current.rotation.y = playerRot.current
+  }, 1)
 
   return (
     <>
@@ -314,84 +252,69 @@ export function VillageWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, 
         isWinter={isWinter}
         reducedMotion={reducedMotion || vista === 'cenital'}
         active={active}
-        anchorRef={anchorRef}
-        shadowSize={42}
+        shadowSize={26}
       />
-      <Water reducedMotion={reducedMotion} isWinter={isWinter} />
-      <SkyClouds reducedMotion={reducedMotion} />
-      <IslandVisual geometry={islandGeo} />
 
-      <mesh geometry={pathEdgeGeo} receiveShadow>
-        <meshStandardMaterial color={isWinter ? '#c5ced6' : '#a67c52'} roughness={1} />
-      </mesh>
-      <mesh geometry={pathGeo} receiveShadow>
-        <meshStandardMaterial color={isWinter ? '#e6edf2' : '#d7b483'} roughness={0.96} />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.04, 0]} receiveShadow>
-        <circleGeometry args={[5.4, 40]} />
-        <meshStandardMaterial color={isWinter ? '#d5dee6' : '#e4d2ae'} roughness={0.94} />
-      </mesh>
+      <group ref={playerVisualRef} position={[0, 0, 0]}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
+          <circleGeometry args={[0.34, 16]} />
+          <meshBasicMaterial color="#000" transparent opacity={0.22} depthWrite={false} />
+        </mesh>
+        <Juanan animationName={anim} scale={PLAYER.scale} />
+      </group>
 
-      {map.instances.map((group) => (
-        <FlatInstances key={`${group.model}-${group.shadow}`} model={group.model} items={group.items} shadow={group.shadow} />
-      ))}
+      <group ref={globeRef} position={[0, -GLOBE_RADIUS, 0]}>
+        <mesh geometry={planetGeo} receiveShadow>
+          <meshStandardMaterial vertexColors roughness={0.9} />
+        </mesh>
+        <Ocean radius={GLOBE_RADIUS} isWinter={isWinter} reducedMotion={reducedMotion} />
 
-      {map.lamps.map((lamp) => (
-        <StreetLamp key={`${lamp[0]}-${lamp[1]}`} position={lamp} />
-      ))}
+        <mesh geometry={pathEdgeGeo} receiveShadow>
+          <meshStandardMaterial color={isWinter ? '#c5ced6' : '#a67c52'} roughness={1} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
+        </mesh>
+        <mesh geometry={pathGeo} receiveShadow>
+          <meshStandardMaterial color={isWinter ? '#e6edf2' : '#d7b483'} roughness={0.96} polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
+        </mesh>
+        <mesh geometry={plazaGeo} receiveShadow>
+          <meshStandardMaterial color={isWinter ? '#d5dee6' : '#e4d2ae'} roughness={0.94} polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
+        </mesh>
 
-      <Physics gravity={[0, -24, 0]} paused={!active} debug={false}>
-        <RigidBody type="fixed" colliders={false} friction={1.4} position={[0, -0.3, 0]}>
-          <CuboidCollider args={[ISLAND.rx, 0.3, ISLAND.rz]} />
-        </RigidBody>
-        <WallRing />
-        {map.colliders.map((collider, index) => (
-          <RigidBody
-            key={`${collider.type}-${index}`}
-            type="fixed"
-            colliders={false}
-            position={collider.position}
-            rotation={[0, collider.rotation, 0]}
-            friction={0.9}
-          >
-            {collider.type === 'cyl'
-              ? <CylinderCollider args={collider.args} />
-              : <CuboidCollider args={collider.args} />}
-          </RigidBody>
+        {map.instances.map((group) => (
+          <FlatInstances key={`${group.model}-${group.shadow}`} model={group.model} items={group.items} shadow={group.shadow} />
+        ))}
+
+        {map.lamps.map((lamp) => (
+          <GlobeFrame key={`${lamp[0]}-${lamp[1]}`} x={lamp[0]} z={lamp[1]}>
+            <StreetLamp position={[0, 0]} />
+          </GlobeFrame>
         ))}
 
         {map.buildings.map((building) => (
           <MapBuilding
             key={building.id}
             {...building}
-            playerRef={playerRef}
             enabled={active && !isFrozen}
             onActivate={handleActivate}
+            onHitbox={registerHitbox}
           />
         ))}
 
-        <Explorer
-          frozen={isFrozen}
-          active={active}
-          playerRef={playerRef}
-          anchorRef={anchorRef}
-          vista={vista}
-          reducedMotion={reducedMotion}
-        />
-      </Physics>
+        <PlanetClouds reducedMotion={reducedMotion} />
 
-      {lifeReady && (
-        <Suspense fallback={null}>
-          {map.animals.map((animal) => (
-            <Critter
-              key={animal.id}
-              frozen={isFrozen || !active}
-              reducedMotion={reducedMotion}
-              {...animal}
-            />
-          ))}
-        </Suspense>
-      )}
+        {lifeReady && (
+          <Suspense fallback={null}>
+            {map.animals.map((animal) => (
+              <Critter
+                key={animal.id}
+                frozen={isFrozen || !active}
+                reducedMotion={reducedMotion}
+                worldRef={worldRef}
+                {...animal}
+              />
+            ))}
+          </Suspense>
+        )}
+      </group>
     </>
   )
 }
