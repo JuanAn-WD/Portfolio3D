@@ -119,7 +119,6 @@ export const buildings = [
     action: 'openProject',
     projectId: 'portfolio3d',
     marker: true,
-    chimney: { model: M.chimneyM, offset: [0.65, -0.15], scale: 1, height: 1.925 },
   },
   {
     id: 'arcade',
