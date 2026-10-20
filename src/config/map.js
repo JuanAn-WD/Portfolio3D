@@ -61,7 +61,6 @@ const M = {
   tank: '/models/Edifices/detail-tank.glb',
   parasolA: '/models/Edifices2/detail-parasol-a.glb',
   parasolB: '/models/Edifices2/detail-parasol-b.glb',
-  chimneyM: '/models/Edifices/chimney-medium.glb',
   chimneyS: '/models/Edifices/chimney-small.glb',
 }
 
