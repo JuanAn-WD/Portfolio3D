@@ -90,6 +90,8 @@ export const buildings = [
     model: '/models/Edifices/building-h.glb',
     position: [0, 0, -14.2],
     rotation: SOUTH,
+    // La puerta de building-h está en el eje -Z. Este giro la deja mirando al camino.
+    modelYaw: Math.PI,
     scale: 3.4,
     keep: 4.2,
     label: 'Sobre mí',

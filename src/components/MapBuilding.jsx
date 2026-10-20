@@ -123,6 +123,7 @@ export function MapBuilding({
   model,
   position,
   rotation = 0,
+  modelYaw = 0,
   scale = 1,
   label,
   tooltip,
@@ -187,7 +188,7 @@ export function MapBuilding({
   return (
     <GlobeFrame x={position[0]} y={-sink} z={position[2]} yaw={rotation}>
       <group>
-        <group scale={[sx, sy, sz]}>
+        <group scale={[sx, sy, sz]} rotation={[0, modelYaw, 0]}>
           <primitive object={clone} />
         </group>
 
