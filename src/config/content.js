@@ -2,7 +2,7 @@ export const profile = {
   name: 'JuanAn',
   role: 'Front-end · experiencias 3D',
   github: 'https://github.com/JuanAn-WD',
-  tagline: 'Un planeta redondo con un pueblo para recorrer: proyectos, estudio y un rincón sobre mí.',
+  tagline: 'Un planeta redondo con un pueblo para recorrer: mi estudio y los proyectos.',
   summary:
     'Construyo experiencias web interactivas. Este planeta es mi portfolio: entra al estudio para ver el setup y acércate a los edificios marcados para abrir proyectos reales.',
 }

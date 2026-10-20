@@ -86,29 +86,24 @@ function seasonal(path, isWinter) {
  */
 export const buildings = [
   {
-    id: 'about',
+    id: 'studio',
     model: '/models/Edifices/building-l.glb',
     position: [0, 0, -16],
     rotation: SOUTH,
     scale: 2.75,
     keep: 4.8,
     label: 'Sobre mí',
-    tooltip: 'conocer a JuanAn',
-    action: 'openProject',
-    projectId: 'about',
+    tooltip: 'entrar al estudio',
+    action: 'enterHouse',
     marker: true,
   },
   {
-    id: 'studio',
+    id: 'home-h',
     model: '/models/Edifices/building-h.glb',
     position: [-14, 0, 11],
     rotation: face(14, -11),
     scale: 4,
     keep: 4.4,
-    label: 'Estudio',
-    tooltip: 'entrar al estudio',
-    action: 'enterHouse',
-    marker: true,
   },
   {
     id: 'lab',
