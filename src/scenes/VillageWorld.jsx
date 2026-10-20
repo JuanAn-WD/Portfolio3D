@@ -30,6 +30,7 @@ import { Ocean } from '../components/Ocean'
 const VISTAS = {
   mapa: { pos: [62, -6, 70], look: [0, -36, 0] },
   cenital: { pos: [0.4, 78, 18], look: [0, -28, 0] },
+  puerta: { pos: [-0.15, 1.25, 3.35], look: [0.35, 0.62, -0.8] },
 }
 
 const _axis = new THREE.Vector3()
@@ -45,6 +46,21 @@ function readVista() {
   if (typeof window === 'undefined') return null
   const value = new URLSearchParams(window.location.search).get('vista')
   return VISTAS[value] ? value : null
+}
+
+function readFeet() {
+  if (typeof window === 'undefined') return null
+  const value = new URLSearchParams(window.location.search).get('pies')
+  if (!value) return null
+  const [x, z] = value.split(',').map(Number)
+  if (!Number.isFinite(x) || !Number.isFinite(z)) return null
+  return [x, z]
+}
+
+function readZoom() {
+  if (typeof window === 'undefined') return null
+  const value = Number(new URLSearchParams(window.location.search).get('zoom'))
+  return Number.isFinite(value) ? value : null
 }
 
 function PlanetClouds({ reducedMotion }) {
@@ -102,6 +118,7 @@ export function VillageWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, 
 
   const reducedMotion = usePrefersReducedMotion()
   const vista = useMemo(() => readVista(), [])
+  const feet = useMemo(() => readFeet(), [])
   const globeRef = useRef()
   const buildingsRef = useRef([])
   const worldRef = useRef({
@@ -117,7 +134,11 @@ export function VillageWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, 
   const [lifeReady, setLifeReady] = useState(false)
   const playerRot = useRef(Math.PI)
   const playerVisualRef = useRef()
-  const zoomRef = useRef(1)
+  const initialZoom = useMemo(() => {
+    const fromUrl = readZoom()
+    return fromUrl == null ? 1 : THREE.MathUtils.clamp(fromUrl, ZOOM_MIN, ZOOM_MAX)
+  }, [])
+  const zoomRef = useRef(initialZoom)
   const fog = useMemo(() => new THREE.Fog(isWinter ? '#b7c3ce' : '#7eb8c9', 58, 130), [isWinter])
 
   useEffect(() => () => {
@@ -138,8 +159,10 @@ export function VillageWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, 
     if (!globe) return
     const stored = globeQuatRef?.current
     const fresh = !stored || (Math.abs(stored.x) < 1e-6 && Math.abs(stored.y) < 1e-6 && Math.abs(stored.z) < 1e-6 && Math.abs(stored.w) > 0.999)
-    if (fresh) {
-      writeSurfaceQuat(PLAYER.spawn[0], PLAYER.spawn[2], 0, _spawnQ)
+    if (fresh || feet) {
+      const fx = feet ? feet[0] : PLAYER.spawn[0]
+      const fz = feet ? feet[1] : PLAYER.spawn[2]
+      writeSurfaceQuat(fx, fz, 0, _spawnQ)
       globe.quaternion.copy(_spawnQ).invert()
     } else {
       globe.quaternion.copy(stored)
@@ -148,7 +171,7 @@ export function VillageWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, 
     _playerLocal.set(0, 0, 0)
     globe.worldToLocal(_playerLocal)
     worldRef.current.player.copy(_playerLocal)
-  }, [globeQuatRef])
+  }, [globeQuatRef, feet])
 
   useEffect(() => {
     if (!active || vista) return undefined
