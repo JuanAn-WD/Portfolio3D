@@ -8,6 +8,15 @@ export function Juanan({ animationName = 'idle', ...props }) {
   const { actions, names } = useAnimations(animations, clone)
 
   useEffect(() => {
+    clone.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true
+        child.receiveShadow = true
+      }
+    })
+  }, [clone])
+
+  useEffect(() => {
     if (!actions || names.length === 0) return
 
     const targetPrefix = animationName.toLowerCase()

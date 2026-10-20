@@ -6,7 +6,7 @@ import * as THREE from 'three'
 import { keyboardMap } from './config/keyboardMap'
 import { preloadCoreModels, preloadDeferredModels } from './config/assets'
 import { profile } from './config/content'
-import { PlanetWorld } from './scenes/PlanetWorld'
+import { VillageWorld } from './scenes/VillageWorld'
 import { MovementProvider } from './context/MovementContext'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { LoaderScreen } from './components/LoaderScreen'
@@ -43,7 +43,6 @@ export default function App() {
   const [assetsReady, setAssetsReady] = useState(false)
   const [introOpen, setIntroOpen] = useState(() => sessionStorage.getItem('intro-dismissed') !== '1')
   const isCoarse = useTouchUi()
-  const globeQuatRef = useRef(new THREE.Quaternion())
   const closeBtnRef = useRef(null)
   const reducedMotion = usePrefersReducedMotion()
 
@@ -133,7 +132,7 @@ export default function App() {
               id="experiencia"
               shadows={{ type: THREE.PCFShadowMap }}
               dpr={[1, 1.5]}
-              camera={{ position: [10, 10, 12], fov: 40 }}
+              camera={{ position: [0, 6.2, 16], fov: 42 }}
               gl={{ antialias: true, powerPreference: 'high-performance' }}
               aria-label={`Portfolio 3D de ${profile.name}`}
             >
@@ -141,10 +140,9 @@ export default function App() {
               <Suspense fallback={null}>
                 {/* Keep the planet mounted so rotation / assets survive house trips */}
                 <group visible={sceneMode === 'island'}>
-                  <PlanetWorld
+                  <VillageWorld
                     active={sceneMode === 'island'}
                     isFrozen={frozen || sceneMode !== 'island'}
-                    globeQuatRef={globeQuatRef}
                     onEnterHouse={() => switchScene('interior')}
                     onOpenModal={setModalData}
                     setTooltip={setTooltip}

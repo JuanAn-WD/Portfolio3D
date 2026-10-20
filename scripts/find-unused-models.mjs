@@ -4,9 +4,11 @@ import path from 'path'
 const sources = [
   'src/config/content.js',
   'src/config/assets.js',
+  'src/config/map.js',
   'src/config/forest.js',
   'src/Juanan.jsx',
   'src/components/SmokeParticle.jsx',
+  'src/components/MapBuilding.jsx',
 ]
 
 const text = sources.map((f) => fs.readFileSync(f, 'utf8')).join('\n')

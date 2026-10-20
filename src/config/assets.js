@@ -1,41 +1,22 @@
 import { useGLTF } from '@react-three/drei'
-import { buildings, fauna, interiorFurniture } from './content'
+import { interiorFurniture } from './content'
+import { EXTRA_MODELS, buildMap, isWinterMonth } from './map'
 
-const FOREST_MODELS = [
-  '/models/ExtDecoration/tree.glb',
-  '/models/ExtDecoration/tree-snow.glb',
-  '/models/ExtDecoration/tree-pine.glb',
-  '/models/ExtDecoration/tree-pine-snow.glb',
-  '/models/ExtDecoration/tree-pine-small.glb',
-  '/models/ExtDecoration/tree-pine-snow-small.glb',
-  '/models/ExtDecoration/rocks.glb',
-  '/models/ExtDecoration/stones.glb',
-  '/models/ExtDecoration/flowers-tall.glb',
-  '/models/ExtDecoration/mushrooms.glb',
-  '/models/ExtDecoration/flowers.glb',
-  '/models/ExtDecoration/grass.glb',
-  '/models/ExtDecoration/plant.glb',
-  '/models/ExtDecoration/crate.glb',
-  '/models/ExtDecoration/barrel.glb',
-  '/models/ExtDecoration/crate-item.glb',
-  '/models/ExtDecoration/pipe.glb',
-  '/models/ExtDecoration/flag.glb',
-  '/models/Edifices2/detail-parasol-a.glb',
-  '/models/Edifices2/detail-parasol-b.glb',
-]
+const map = buildMap(isWinterMonth())
 
-/** Critical for first paint: player, buildings, forest / village props. */
+/** Critical for first paint: player, buildings, paths props. */
 export const CORE_MODEL_PATHS = [
   '/models/Player/juanan.glb',
-  ...buildings.map((b) => b.modelPath),
-  ...buildings.flatMap((b) => (b.chimney ? [b.chimney.path] : [])),
-  ...FOREST_MODELS,
+  ...EXTRA_MODELS,
+  ...map.buildings.map((b) => b.model),
+  ...map.buildings.flatMap((b) => (b.chimney ? [b.chimney.model] : [])),
+  ...map.instances.map((group) => group.model),
 ]
 
-/** Deferred after core load: fauna + interior (only needed inside the house). */
+/** Deferred after core load: animals + interior furniture. */
 export const DEFERRED_MODEL_PATHS = [
-  ...fauna.map((f) => f.modelPath),
-  ...interiorFurniture.map((f) => f.path),
+  ...map.animals.map((animal) => animal.model),
+  ...interiorFurniture.map((item) => item.path),
 ]
 
 export const USED_MODEL_PATHS = [...CORE_MODEL_PATHS, ...DEFERRED_MODEL_PATHS]

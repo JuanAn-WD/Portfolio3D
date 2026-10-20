@@ -1,20 +1,39 @@
 # Portfolio 3D
 
-Experiencia de portfolio explorables en un mini-planeta, hecha con **React Three Fiber**, **Three.js** y **Rapier**.
+Pueblo costero explorable, hecho con **React Three Fiber**, **Three.js** y **Rapier**.
 
-El personaje se queda en la cima del mundo; el globo rota debajo (estilo treadmill). Hay edificios con fichas de proyecto, un interior con físicas y un ciclo día/noche.
+El personaje camina por la isla (WASD en el mundo: W hacia el norte). Hay edificios con fichas de proyecto, un estudio interior y un ciclo día/noche. Un muro invisible en la orilla evita caer al agua.
+
+## Cómo está organizado el mapa
+
+Todo el layout vive en `src/config/map.js`:
+
+| Export | Qué es |
+| --- | --- |
+| `buildings` | Casas, tiendas, rascacielos y los cuatro edificios con interacción |
+| `paths` | Caminos de tierra. Cada punto es `[x, z]` |
+| `lamps` | Farolas `[x, z]` |
+| `fenceRuns` | Vallas, setos y cuerdas. `gate` abre un hueco |
+| `props` | Árboles, sombrillas, cajas y demás, colocados a mano |
+| `scatterZones` | Hierba, flores y rocas de relleno (semilla fija) |
+| `animals` | Fauna y el radio por el que deambula |
+| `PLAYER` / `ISLAND` | Escala, punto de aparición y tamaño de la isla |
+
+`face(dx, dz)` calcula el giro para que la puerta (eje local +Z, con el modelo ya centrado en el suelo) mire hacia ese vector. `keep` es el radio libre de vegetación alrededor de un edificio.
+
+Para encuadrar el mapa sin jugar: `?vista=mapa` (oblicua) o `?vista=cenital`.
 
 ## Cómo añadir un proyecto
 
-Edita `src/config/content.js`:
+1. Añade la ficha en `projects` dentro de `src/config/content.js`.
+2. En `buildings` (`src/config/map.js`) pon `action: 'openProject'`, `projectId`, `label`, `tooltip` y `marker: true`.
+3. Opcional: alarga un camino en `paths` hasta la puerta.
 
-1. Añade una entrada en `projects` (título, descripción, tags, `links`).
-2. Añade un edificio en `buildings` con `action: 'openProject'` y `projectId`.
-3. Opcional: coloca un `GlobePath` en `PlanetWorld.jsx` hasta el nuevo edificio.
+El estudio (`action: 'enterHouse'`) abre el interior, que sigue definido en `interiorFurniture`.
 
 ## Controles
 
-- **WASD / flechas:** mover
+- **WASD / flechas:** mover (W hacia el norte, la cámara se queda al sur del personaje)
 - **E** o clic en el tooltip: interactuar
 - **Esc:** cerrar ficha
 - En táctil: stick inferior izquierdo
@@ -43,12 +62,9 @@ React 19, Three.js, @react-three/fiber, drei, Rapier, Vite. Modelos low-poly de 
 ```text
 src/
   App.jsx                 # Canvas, HUD, modal, transiciones
-  config/content.js       # Bio, proyectos, edificios, fauna
-  config/forest.js        # Bosque con semilla
+  config/content.js       # Bio, proyectos, muebles del estudio
+  config/map.js           # Pueblo: edificios, caminos, props, animales
   config/assets.js        # Preload de GLBs usados
-  scenes/PlanetWorld.jsx
+  scenes/VillageWorld.jsx # Isla jugable
   scenes/InteriorWorld.jsx
-  components/
-scripts/
-  find-unused-models.mjs  # Poda del pack Kenney
 ```
