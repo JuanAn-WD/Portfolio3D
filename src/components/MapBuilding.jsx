@@ -21,7 +21,57 @@ function prepareClone(scene) {
       child.receiveShadow = true
     }
   })
-  return { clone, size }
+  return { clone, size, roof: roofHeight(clone, size.y) }
+}
+
+/** Altura del tejado, sin contar una chimenea estrecha que suba el bounding box. */
+function roofHeight(clone, fallback) {
+  clone.updateMatrixWorld(true)
+  const v = new THREE.Vector3()
+  const pts = []
+  clone.traverse((child) => {
+    if (!child.isMesh || !child.geometry?.attributes?.position) return
+    const attr = child.geometry.attributes.position
+    for (let i = 0; i < attr.count; i++) {
+      v.fromBufferAttribute(attr, i)
+      child.localToWorld(v)
+      pts.push(v.x, v.y, v.z)
+    }
+  })
+  if (pts.length < 12) return fallback
+  let minX = Infinity
+  let maxX = -Infinity
+  let minZ = Infinity
+  let maxZ = -Infinity
+  let maxY = 0
+  for (let i = 0; i < pts.length; i += 3) {
+    minX = Math.min(minX, pts[i])
+    maxX = Math.max(maxX, pts[i])
+    maxY = Math.max(maxY, pts[i + 1])
+    minZ = Math.min(minZ, pts[i + 2])
+    maxZ = Math.max(maxZ, pts[i + 2])
+  }
+  const foot = (maxX - minX) * (maxZ - minZ) || 1
+  const step = Math.max(0.04, maxY / 36)
+  let roof = 0
+  for (let y = step; y <= maxY + 0.001; y += step) {
+    let x0 = Infinity
+    let z0 = Infinity
+    let x1 = -Infinity
+    let z1 = -Infinity
+    let n = 0
+    for (let i = 0; i < pts.length; i += 3) {
+      if (Math.abs(pts[i + 1] - y) > step * 0.65) continue
+      n += 1
+      x0 = Math.min(x0, pts[i])
+      x1 = Math.max(x1, pts[i])
+      z0 = Math.min(z0, pts[i + 2])
+      z1 = Math.max(z1, pts[i + 2])
+    }
+    if (n < 8) continue
+    if (((x1 - x0) * (z1 - z0)) / foot > 0.28) roof = y
+  }
+  return roof > 0 ? roof : fallback
 }
 
 function DoorMarker({ position }) {
@@ -136,7 +186,7 @@ export function MapBuilding({
   interactDistance = 2.5,
 }) {
   const { scene } = useGLTF(model)
-  const { clone, size } = useMemo(() => prepareClone(scene), [scene])
+  const { clone, size, roof: roofY } = useMemo(() => prepareClone(scene), [scene])
   const doorRef = useRef()
   const wasClose = useRef(false)
 
@@ -183,6 +233,7 @@ export function MapBuilding({
   })
 
   const roof = size.y * sy
+  const chimneyY = roofY * sy - 0.02
   const sink = groundSink(Math.hypot(halfX, halfZ), 0.04)
 
   return (
@@ -195,7 +246,7 @@ export function MapBuilding({
         {chimney && (
           <Chimney
             path={chimney.model}
-            position={[chimney.offset[0], roof - 0.04, chimney.offset[1]]}
+            position={[chimney.offset[0], chimneyY, chimney.offset[1]]}
             scale={chimney.scale}
             smokeHeight={(chimney.height || 1.6) * chimney.scale}
           />
