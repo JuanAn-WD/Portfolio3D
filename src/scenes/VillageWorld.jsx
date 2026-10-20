@@ -244,7 +244,7 @@ export function VillageWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, 
       world.player.copy(_playerLocal)
     }
     if (playerVisualRef.current) playerVisualRef.current.rotation.y = playerRot.current
-  }, 1)
+  })
 
   return (
     <>
