@@ -59,8 +59,10 @@ export const projects = {
   streak365: {
     id: 'streak365',
     title: 'Streak365',
-    description: 'Proyecto de JuanAn.',
-    links: [],
+    description:
+      'Reto de 365 días: registra hábitos diarios, construye tu racha y sube en el ranking global.',
+    tags: ['React', 'PWA', 'Hábitos'],
+    links: [{ label: 'Demo', href: 'https://streak365.vercel.app' }],
   },
 }
 
