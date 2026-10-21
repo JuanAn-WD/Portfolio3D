@@ -56,9 +56,9 @@ export const projects = {
       { label: 'GitHub', href: 'https://github.com/JuanAn-WD/ShelvingIt' },
     ],
   },
-  steak365: {
-    id: 'steak365',
-    title: 'Steak365',
+  streak365: {
+    id: 'streak365',
+    title: 'Streak365',
     description: 'Proyecto de JuanAn.',
     links: [],
   },
