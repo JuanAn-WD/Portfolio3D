@@ -10,10 +10,14 @@ import { projects } from '../config/content'
 import { PLAYER, buildMap, isWinterMonth } from '../config/map'
 import { createDiscGeometry, createPlanetGeometry, createRibbonGeometry, projectOntoGlobe } from '../world/geometries'
 import {
+  CAMERA_HOME,
+  DEFAULT_ZOOM,
   GLOBE_RADIUS,
   PLAYER_RADIUS,
   SEA_LIMIT,
   SPIN,
+  ZOOM_MAX,
+  ZOOM_MIN,
   pointBlocked,
   spheresFromColliders,
   writeSurfaceQuat,
@@ -39,8 +43,6 @@ const _prevQ = new THREE.Quaternion()
 const _playerLocal = new THREE.Vector3()
 const _camGoal = new THREE.Vector3(0, 3.5, 6.5)
 const _spawnQ = new THREE.Quaternion()
-const ZOOM_MIN = 0.58
-const ZOOM_MAX = 2.55
 
 function readVista() {
   if (typeof window === 'undefined') return null
@@ -59,7 +61,9 @@ function readFeet() {
 
 function readZoom() {
   if (typeof window === 'undefined') return null
-  const value = Number(new URLSearchParams(window.location.search).get('zoom'))
+  const raw = new URLSearchParams(window.location.search).get('zoom')
+  if (raw == null || raw === '') return null
+  const value = Number(raw)
   return Number.isFinite(value) ? value : null
 }
 
@@ -136,7 +140,7 @@ export function VillageWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, 
   const playerVisualRef = useRef()
   const initialZoom = useMemo(() => {
     const fromUrl = readZoom()
-    return fromUrl == null ? 1 : THREE.MathUtils.clamp(fromUrl, ZOOM_MIN, ZOOM_MAX)
+    return fromUrl == null ? DEFAULT_ZOOM : THREE.MathUtils.clamp(fromUrl, ZOOM_MIN, ZOOM_MAX)
   }, [])
   const zoomRef = useRef(initialZoom)
   const fog = useMemo(() => new THREE.Fog(isWinter ? '#b7c3ce' : '#7eb8c9', 58, 130), [isWinter])
@@ -277,7 +281,7 @@ export function VillageWorld({ onEnterHouse, onOpenModal, setTooltip, isFrozen, 
       return
     }
 
-    _camGoal.set(0, 3.5, 6.5).multiplyScalar(zoomRef.current)
+    _camGoal.set(CAMERA_HOME[0], CAMERA_HOME[1], CAMERA_HOME[2]).multiplyScalar(zoomRef.current)
     state.camera.position.lerp(_camGoal, 0.12)
     state.camera.lookAt(0, 0.8, 0)
 

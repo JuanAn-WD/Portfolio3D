@@ -338,7 +338,7 @@ export const props = [
   { model: M.rocks, position: [20.5, 0, 18.5], rotation: 0.2, scale: 1.7, hit: 0.45, hitHeight: 0.6, shadow: true },
 ]
 
-/** Anillo de flores alrededor de la plaza (radio 6,6 m). */
+/** Anillo de flores alrededor de la plaza (radio 6,6 m). Sin choque: se pisan. */
 for (let i = 0; i < 8; i++) {
   const a = (i / 8) * Math.PI * 2 + 0.2
   props.push({
@@ -347,7 +347,6 @@ for (let i = 0; i < 8; i++) {
     rotation: a,
     scale: i % 2 === 0 ? 1.55 : 1.35,
     shadow: false,
-    hit: 0.28,
   })
 }
 
@@ -451,6 +450,15 @@ function expandFenceRun(run) {
   return items
 }
 
+/** Las flores se atraviesan. En invierno pasan a ser piedras y sí frenan. */
+function dressGroundCover(modelPath, isWinter, hit, hitHeight) {
+  const model = seasonal(modelPath, isWinter)
+  const flower = modelPath === M.flowers || modelPath === M.flowersTall
+  if (!flower) return { model, hit: hit || 0, hitHeight }
+  if (model === modelPath) return { model, hit: 0, hitHeight: 0 }
+  return { model, hit: hit || 0.34, hitHeight: hitHeight || 0.4 }
+}
+
 function expandScatter(isWinter, keeps) {
   const items = []
   for (const zone of scatterZones) {
@@ -468,14 +476,15 @@ function expandScatter(isWinter, keeps) {
         continue
       }
       const span = zone.scale[1] - zone.scale[0]
+      const dressed = dressGroundCover(zone.model, isWinter, zone.hit, zone.hitHeight)
       items.push({
-        model: seasonal(zone.model, isWinter),
+        model: dressed.model,
         position: [x, 0, z],
         rotation: rand() * Math.PI * 2,
         scale: zone.scale[0] + rand() * span,
         shadow: !!zone.shadow,
-        hit: zone.hit || 0,
-        hitHeight: zone.hitHeight || (zone.hit ? 1.5 : 0),
+        hit: dressed.hit,
+        hitHeight: dressed.hitHeight || (dressed.hit ? 1.5 : 0),
       })
       placed++
     }
@@ -523,10 +532,10 @@ export function buildMap(isWinter = false) {
     r: b.keep ?? 3.5,
   }))
 
-  const hand = props.map((item) => ({
-    ...item,
-    model: seasonal(item.model, isWinter),
-  }))
+  const hand = props.map((item) => {
+    const dressed = dressGroundCover(item.model, isWinter, item.hit, item.hitHeight)
+    return { ...item, model: dressed.model, hit: dressed.hit, hitHeight: dressed.hitHeight }
+  })
   const fences = fenceRuns.flatMap(expandFenceRun)
   const scattered = expandScatter(isWinter, keeps)
   const all = [...hand, ...fences, ...scattered]

@@ -8,6 +8,11 @@ export const SEA_LIMIT = 0.38
 export const PLAYER_RADIUS = 0.42
 /** Giro del planeta, igual que el treadmill original (radianes por segundo a tope). */
 export const SPIN = 0.2
+/** Encuadre al pulsar «Entrar al planeta». 1 es el plano corto; más alto aleja. */
+export const DEFAULT_ZOOM = 1.65
+export const CAMERA_HOME = [0, 3.5, 6.5]
+export const ZOOM_MIN = 0.58
+export const ZOOM_MAX = 2.55
 
 const _euler = new THREE.Euler()
 const _yawQ = new THREE.Quaternion()

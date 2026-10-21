@@ -1,8 +1,9 @@
 import * as THREE from 'three'
 import { GLOBE_RADIUS, writeFlatToGlobe } from './globe'
 
-const grass = new THREE.Color('#3f9a4e')
-const grassDark = new THREE.Color('#2d7a3e')
+// El mismo verde que las matas de Kenney (#61cb8b), con una sombra un poco más honda.
+const grass = new THREE.Color('#62c48a')
+const grassDark = new THREE.Color('#3d9a62')
 const sand = new THREE.Color('#e7d3a1')
 const sandDark = new THREE.Color('#d2b57a')
 const cliff = new THREE.Color('#8a6244')
@@ -57,7 +58,7 @@ export function createIslandGeometry(rx, rz, depth = 1.65) {
 
     if (ny > 0.55 && y > -0.35) {
       if (shore) tmp.copy(sand).lerp(sandDark, n * 0.55)
-      else tmp.copy(grass).lerp(grassDark, n * 0.7)
+      else tmp.copy(grass).lerp(grassDark, n * 0.75)
     } else {
       const shade = THREE.MathUtils.clamp((y + depth) / depth, 0, 1)
       tmp.copy(cliffDark).lerp(cliff, shade * 0.85 + n * 0.15)
@@ -144,20 +145,22 @@ export function createDiscGeometry(radius, lift = 0.06) {
 
 /** Planeta con hierba arriba y arena hacia el mar. El polo norte es +Y. */
 export function createPlanetGeometry(isWinter) {
-  const geo = new THREE.SphereGeometry(GLOBE_RADIUS, 64, 48)
+  const geo = new THREE.SphereGeometry(GLOBE_RADIUS, 96, 72)
   const pos = geo.attributes.position
   const colors = new Float32Array(pos.count * 3)
-  const grassA = new THREE.Color(isWinter ? '#e6edf2' : '#3f9a4e')
-  const grassB = new THREE.Color(isWinter ? '#c5ced6' : '#2d7a3e')
+  const grassA = new THREE.Color(isWinter ? '#e6edf2' : '#62c48a')
+  const grassB = new THREE.Color(isWinter ? '#c5ced6' : '#3d9a62')
   const sandA = new THREE.Color(isWinter ? '#f4f7fa' : '#e7d3a1')
   const sandB = new THREE.Color(isWinter ? '#d5dee6' : '#d2b57a')
   const tint = new THREE.Color()
+  const grassy = new THREE.Color()
 
   for (let i = 0; i < pos.count; i++) {
     const y = pos.getY(i) / GLOBE_RADIUS
     const n = hash(pos.getX(i), pos.getZ(i))
-    if (y > 0.5) tint.copy(n > 0.5 ? grassA : grassB)
-    else if (y > 0.36) tint.copy(sandA).lerp(n > 0.5 ? grassA : grassB, (y - 0.36) / 0.14)
+    grassy.copy(grassA).lerp(grassB, n * 0.75)
+    if (y > 0.5) tint.copy(grassy)
+    else if (y > 0.36) tint.copy(n > 0.45 ? sandA : sandB).lerp(grassy, (y - 0.36) / 0.14)
     else tint.copy(n > 0.45 ? sandA : sandB)
     colors[i * 3] = tint.r
     colors[i * 3 + 1] = tint.g

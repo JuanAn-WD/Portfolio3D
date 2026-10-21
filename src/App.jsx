@@ -7,6 +7,7 @@ import { keyboardMap } from './config/keyboardMap'
 import { preloadCoreModels, preloadDeferredModels } from './config/assets'
 import { profile } from './config/content'
 import { VillageWorld } from './scenes/VillageWorld'
+import { CAMERA_HOME, DEFAULT_ZOOM } from './world/globe'
 import { MovementProvider } from './context/MovementContext'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { LoaderScreen } from './components/LoaderScreen'
@@ -133,7 +134,7 @@ export default function App() {
               id="experiencia"
               shadows={{ type: THREE.PCFShadowMap }}
               dpr={[1, 1.5]}
-              camera={{ position: [0, 3.5, 6.5], fov: 40 }}
+              camera={{ position: CAMERA_HOME.map((v) => v * DEFAULT_ZOOM), fov: 40 }}
               gl={{ antialias: true, powerPreference: 'high-performance' }}
               aria-label={`Portfolio 3D de ${profile.name}`}
             >
