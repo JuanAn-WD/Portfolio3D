@@ -184,6 +184,8 @@ export function MapBuilding({
   onHitbox,
   enabled = true,
   interactDistance = 2.5,
+  /** Desplazamiento local [x, z] del punto de interacción respecto al centro del frente (+Z). */
+  doorOffset = [0, 0],
 }) {
   const { scene } = useGLTF(model)
   const { clone, size, roof: roofY } = useMemo(() => prepareClone(scene), [scene])
@@ -197,7 +199,11 @@ export function MapBuilding({
   const halfY = (size.y * sy) / 2
   const halfZ = (size.z * sz) / 2
   const shrink = 0.86
-  const doorLocal = [0.15, 1.15, halfZ * shrink + 0.7]
+  const doorLocal = [
+    (doorOffset[0] || 0) + 0.05,
+    Math.min(1.15, halfY * 0.55 + 0.35),
+    halfZ * shrink + 0.55 + (doorOffset[1] || 0),
+  ]
 
   useLayoutEffect(() => {
     if (!onHitbox) return undefined
@@ -252,7 +258,12 @@ export function MapBuilding({
           />
         )}
 
-        {marker && <Sign label={label} position={[halfX * 0.35 + 0.7, 0, halfZ * shrink + 0.05]} />}
+        {marker && (
+          <Sign
+            label={label}
+            position={[doorLocal[0] + 0.55, 0, halfZ * shrink + 0.08]}
+          />
+        )}
 
         <group ref={doorRef} position={doorLocal} />
         {marker && <DoorMarker position={[doorLocal[0], doorLocal[1], doorLocal[2]]} />}

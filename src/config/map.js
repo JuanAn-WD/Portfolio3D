@@ -23,6 +23,7 @@ export const face = (dx, dz) => Math.atan2(dx, dz)
 const EAST = face(1, 0)
 const WEST = face(-1, 0)
 const SOUTH = face(0, 1)
+const NORTH = face(0, -1)
 
 export const ISLAND = {
   rx: 38,
@@ -97,6 +98,8 @@ export const buildings = [
     tooltip: 'entrar al estudio',
     action: 'enterHouse',
     marker: true,
+    // Puerta naranja a la derecha del garaje (tras el giro del modelo).
+    doorOffset: [0.9, 0],
   },
   {
     id: 'home-l',
@@ -110,7 +113,10 @@ export const buildings = [
     id: 'lab',
     model: '/models/Edifices/building-e.glb',
     position: [13.2, 0, -8.2],
-    rotation: face(-13.2, 8.2),
+    // El camino llega desde el sur; la fachada con puerta mira ahí.
+    rotation: SOUTH,
+    // Puerta y garaje en -Z del GLB: media vuelta para alinearlas con +Z.
+    modelYaw: Math.PI,
     scale: 3.2,
     keep: 4.4,
     label: 'Portfolio 3D',
@@ -118,12 +124,17 @@ export const buildings = [
     action: 'openProject',
     projectId: 'portfolio3d',
     marker: true,
+    // Puerta azul a la derecha del garaje, en el frente ya girado.
+    doorOffset: [1.05, 0],
   },
   {
     id: 'shelving',
     model: '/models/Edifices/building-c.glb',
     position: [11, 0, 14.2],
-    rotation: face(-11, -14.2),
+    // El camino llega desde el norte; la fachada con puerta mira ahí.
+    rotation: NORTH,
+    // Puertas azul y garaje en -Z: media vuelta para alinearlas con +Z.
+    modelYaw: Math.PI,
     scale: 2.95,
     keep: 4.6,
     label: 'Shelvingit',
@@ -131,12 +142,15 @@ export const buildings = [
     action: 'openProject',
     projectId: 'shelvingit',
     marker: true,
+    doorOffset: [0.95, 0],
   },
   {
     id: 'steak',
     model: '/models/Edifices/building-a.glb',
     position: [-7.6, 0, 13.35],
     rotation: SOUTH,
+    // Garaje y puerta peatonal en -Z: miran al paseo del sur.
+    modelYaw: Math.PI,
     scale: 2.75,
     keep: 4.2,
     label: 'Steak365',
@@ -144,6 +158,7 @@ export const buildings = [
     action: 'openProject',
     projectId: 'steak365',
     marker: true,
+    doorOffset: [1.25, 0],
   },
   {
     id: 'home-b',
@@ -265,8 +280,8 @@ export const paths = [
   { width: 2.8, points: [[0, 7.2], [0, 0], [0, -11.2]] },
   { width: 2.55, points: [[-15, 0], [0, 0], [12, 0], [17.5, 2]] },
   { width: 2.35, points: [[-1, 1.2], [-8, 6], [-14, 9.4]] },
-  { width: 2.35, points: [[2, 1.5], [7, 8], [11, 12]] },
-  { width: 2.3, points: [[7, -0.6], [11, -4.5], [13.2, -6.2]] },
+  { width: 2.35, points: [[2, 1.5], [7, 8], [10.2, 10.4]] },
+  { width: 2.3, points: [[7, -0.6], [11, -4.5], [13.5, -5.5]] },
   { width: 2.45, points: [[-16, -18], [-16, -8], [-16, 2], [-13, 7]] },
   { width: 2.2, points: [[-15, 2], [-16.6, 5]] },
   { width: 2.7, points: [[-12, 16.2], [0, 17.6], [13, 16]] },
