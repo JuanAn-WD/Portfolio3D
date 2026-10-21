@@ -1,15 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useProgress } from '@react-three/drei'
 import { profile } from '../config/content'
 
 export function LoaderScreen({ onComplete }) {
   const { active, progress, loaded, total } = useProgress()
-  const [done, setDone] = useState(false)
+  const done = !active && progress >= 100
   const reported = useRef(false)
-
-  useEffect(() => {
-    if (!active && progress >= 100) setDone(true)
-  }, [active, progress])
 
   useEffect(() => {
     if (!done || reported.current) return

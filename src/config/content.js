@@ -2,12 +2,19 @@ export const profile = {
   name: 'JuanAn',
   role: 'Front-end · experiencias 3D',
   github: 'https://github.com/JuanAn-WD',
-  tagline: 'Experiencias web interactivas en un planeta explorable.',
+  tagline: 'Un planeta redondo con un pueblo para recorrer: mi estudio y los proyectos.',
   summary:
-    'Construyo experiencias web interactivas. Este planeta es mi portfolio: entra al estudio para ver el setup y visita los edificios para abrir proyectos reales.',
+    'Construyo experiencias web interactivas. Este planeta es mi portfolio: entra al estudio para ver el setup y acércate a los edificios marcados para abrir proyectos reales.',
 }
 
 export const projects = {
+  about: {
+    id: 'about',
+    title: 'Sobre mí',
+    description: profile.summary,
+    tags: ['Front-end', 'Experiencias 3D'],
+    links: [{ label: 'GitHub', href: profile.github }],
+  },
   setup: {
     id: 'setup',
     title: 'Setup de desarrollo',
@@ -34,88 +41,30 @@ export const projects = {
     id: 'portfolio3d',
     title: 'Portfolio 3D',
     description:
-      'Mundo esférico explorable (estilo treadmill): el personaje se queda arriba y el planeta rota debajo. Naturaleza procedural, interiores con físicas y ciclo día/noche.',
-    tags: ['React Three Fiber', 'Rapier', 'Mundo procedural'],
+      'Planeta esférico explorable: el personaje se queda arriba y el mundo gira debajo. El pueblo tiene edificios con ficha, un estudio interior y ciclo día/noche.',
+    tags: ['React Three Fiber', 'Rapier', 'Mundo 3D'],
     links: [{ label: 'GitHub', href: 'https://github.com/JuanAn-WD/Portfolio3D' }],
   },
-  tictactoe: {
-    id: 'tictactoe',
-    title: 'Tic Tac Toe',
+  shelvingit: {
+    id: 'shelvingit',
+    title: 'Shelvingit',
     description:
-      'Tres en raya en el navegador. Un proyecto anterior, más pequeño, de lógica de juego y UI.',
-    tags: ['React', 'Lógica de juego'],
+      'Biblioteca personal gamificada: busca libros, organízalos en tu estantería y sigue qué estás leyendo, qué quieres comprar y qué ya terminaste.',
+    tags: ['React', 'Django', 'PWA'],
     links: [
-      { label: 'Demo', href: 'https://tic-tac-toe-juanan-wd.vercel.app' },
-      { label: 'GitHub', href: 'https://github.com/JuanAn-WD/TicTacToe' },
+      { label: 'Demo', href: 'https://shelvingit.vercel.app' },
+      { label: 'GitHub', href: 'https://github.com/JuanAn-WD/ShelvingIt' },
     ],
   },
+  streak365: {
+    id: 'streak365',
+    title: 'Streak365',
+    description:
+      'Reto de 365 días: registra hábitos diarios, construye tu racha y sube en el ranking global.',
+    tags: ['React', 'PWA', 'Hábitos'],
+    links: [{ label: 'Demo', href: 'https://streak365.vercel.app' }],
+  },
 }
-
-export const buildings = [
-  {
-    id: 'house',
-    refKey: 'house',
-    modelPath: '/models/Edifices/building-h.glb',
-    position: [-7, -0.1, -8],
-    rotation: [0, Math.PI / 0.85, 0],
-    scale: 3,
-    // Mesh center is offset in the GLB; hitOffset = centerXZ * scale
-    hitOffset: [-1.74, 0, 0.84],
-    hitRadius: 2.15,
-    popupTitle: 'Estudio',
-    popupHeight: 6.5,
-    interactDistance: 4.5,
-    tooltip: 'entrar al estudio',
-    action: 'enterHouse',
-  },
-  {
-    id: 'lab',
-    refKey: 'lab',
-    modelPath: '/models/Edifices/building-e.glb',
-    position: [8, -0.1, -4],
-    rotation: [0, -Math.PI / 0.75, 0],
-    scale: 3,
-    hitOffset: [0, 0, 0.75],
-    hitRadius: 2.7,
-    popupTitle: 'Portfolio 3D',
-    popupHeight: 6.5,
-    interactDistance: 4.5,
-    tooltip: 'ver el proyecto Portfolio 3D',
-    action: 'openProject',
-    projectId: 'portfolio3d',
-    chimney: { path: '/models/Edifices/chimney-medium.glb', position: [1.0, 1, -0.6], scale: 1.0 },
-  },
-  {
-    id: 'arcade',
-    refKey: 'arcade',
-    modelPath: '/models/Edifices/building-c.glb',
-    position: [5, -0.1, 9],
-    rotation: [0, Math.PI * 1.1, 0],
-    scale: 3,
-    hitOffset: [0.29, 0, 0.43],
-    hitRadius: 3.25,
-    popupTitle: 'Tic Tac Toe',
-    popupHeight: 6.5,
-    interactDistance: 4.5,
-    tooltip: 'ver Tic Tac Toe',
-    action: 'openProject',
-    projectId: 'tictactoe',
-  },
-]
-
-export const fauna = [
-  { modelPath: '/models/Animals/animal-cow.glb', position: [-12, 0, -4], scale: 0.4 },
-  { modelPath: '/models/Animals/animal-pig.glb', position: [6, 0, 12], scale: 0.35 },
-  { modelPath: '/models/Animals/animal-bunny.glb', position: [-2, 0, -3], scale: 0.25, speed: 0.8 },
-  { modelPath: '/models/Animals/animal-bee.glb', position: [2, 0, 3], scale: 0.2, speed: 0.6, flyHeight: 1.6 },
-  { modelPath: '/models/Animals/animal-dog.glb', position: [-3, 0, 8], scale: 0.35, speed: 0.5 },
-  { modelPath: '/models/Animals/animal-cat.glb', position: [-8, 0, -4], scale: 0.25, speed: 0.4 },
-  { modelPath: '/models/Animals/animal-chick.glb', position: [-5, 0, 5], scale: 0.15, speed: 0.9 },
-  { modelPath: '/models/Animals/animal-crab.glb', position: [22, 0, 8], scale: 0.22, speed: 0.45 },
-  { modelPath: '/models/Animals/animal-crab.glb', position: [-18, 0, 16], scale: 0.22, speed: 0.45 },
-  { modelPath: '/models/Animals/animal-parrot.glb', position: [6, 0, -6], scale: 0.3, speed: 0.7, flyHeight: 2.2 },
-  { modelPath: '/models/Animals/animal-parrot.glb', position: [-9, 0, 9], scale: 0.3, speed: 0.65, flyHeight: 2.5 },
-]
 
 const F = 2.4
 

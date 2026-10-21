@@ -9,7 +9,12 @@ import { Juanan } from '../Juanan'
 import { Prop } from '../components/Prop'
 import { interiorFurniture, projects } from '../config/content'
 
-function InteriorPlayer({ isFrozen }) {
+/** A partir de esta z el personaje queda tapado por la pared frontal vista desde la cámara. */
+const FRONT_WALL_CUT_Z = 2.6
+/** Altura relativa de la pared frontal recortada (al estilo de los Sims): un zócalo de ~0,5 m. */
+const FRONT_WALL_CUT = 0.12
+
+function InteriorPlayer({ isFrozen, frontWallRef, lintelRef }) {
   const rbRef = useRef()
   const visualRef = useRef()
   const [, getKeys] = useKeyboardControls()
@@ -56,6 +61,14 @@ function InteriorPlayer({ isFrozen }) {
     state.camera.position.z = THREE.MathUtils.damp(state.camera.position.z, pos.z + 6, 5, delta)
     cameraTarget.current.set(pos.x, pos.y, pos.z)
     state.camera.lookAt(cameraTarget.current)
+
+    // Solo se recorta la pared frontal (la única entre la cámara y el personaje); los colliders no cambian.
+    const wall = frontWallRef?.current
+    if (wall) {
+      const goal = pos.z > FRONT_WALL_CUT_Z ? FRONT_WALL_CUT : 1
+      wall.scale.y = THREE.MathUtils.damp(wall.scale.y, goal, 8, delta)
+      if (lintelRef?.current) lintelRef.current.visible = wall.scale.y > 0.55
+    }
   })
 
   return (
@@ -99,7 +112,7 @@ function Furnishing({ path, position, rotation, scale, collider }) {
   )
 }
 
-function RoomShell() {
+function RoomShell({ frontWallRef, lintelRef }) {
   const wall = '#f3e7d3'
   const wallCool = '#ebe4d6'
   const wood = '#7a4a24'
@@ -138,23 +151,29 @@ function RoomShell() {
       <CuboidCollider args={[2.5, 2, 0.2]} position={[-3.5, 2, 6.2]} />
       <CuboidCollider args={[2.5, 2, 0.2]} position={[3.5, 2, 6.2]} />
       <CuboidCollider args={[1.2, 2, 0.28]} position={[0, 2, 5.85]} />
-      <mesh position={[-3.5, 2, 6.2]}>
-        <boxGeometry args={[5, 4, 0.4]} />
-        <meshStandardMaterial color={wall} roughness={0.9} />
-      </mesh>
-      <mesh position={[3.5, 2, 6.2]}>
-        <boxGeometry args={[5, 4, 0.4]} />
-        <meshStandardMaterial color={wall} roughness={0.9} />
-      </mesh>
+      {/* Pared frontal: se escala en Y desde el suelo para recortarla cuando tapa al personaje. */}
+      <group ref={frontWallRef}>
+        <mesh position={[-3.5, 2, 6.2]}>
+          <boxGeometry args={[5, 4, 0.4]} />
+          <meshStandardMaterial color={wall} roughness={0.9} />
+        </mesh>
+        <mesh position={[3.5, 2, 6.2]}>
+          <boxGeometry args={[5, 4, 0.4]} />
+          <meshStandardMaterial color={wall} roughness={0.9} />
+        </mesh>
 
-      <mesh position={[0, 3.45, 6.2]}>
-        <boxGeometry args={[2.1, 1.1, 0.38]} />
-        <meshStandardMaterial color={wall} roughness={0.9} />
-      </mesh>
-      <mesh position={[0, 2.55, 6.05]}>
-        <boxGeometry args={[2.05, 0.18, 0.12]} />
-        <meshStandardMaterial color="#8f2a22" roughness={0.45} />
-      </mesh>
+        {/* Dintel y moldura de la puerta: se ocultan con la pared baja para no cruzar el hueco. */}
+        <group ref={lintelRef}>
+          <mesh position={[0, 3.45, 6.2]}>
+            <boxGeometry args={[2.1, 1.1, 0.38]} />
+            <meshStandardMaterial color={wall} roughness={0.9} />
+          </mesh>
+          <mesh position={[0, 2.55, 6.05]}>
+            <boxGeometry args={[2.05, 0.18, 0.12]} />
+            <meshStandardMaterial color="#8f2a22" roughness={0.45} />
+          </mesh>
+        </group>
+      </group>
     </RigidBody>
   )
 }
@@ -180,6 +199,9 @@ function WindowPane({ position, rotation = [0, 0, 0], size = [2.2, 1.5] }) {
 }
 
 export function InteriorWorld({ onExitHouse, onOpenModal, setTooltip, isFrozen }) {
+  const frontWallRef = useRef()
+  const lintelRef = useRef()
+
   return (
     <>
       <color attach="background" args={['#1c1916']} />
@@ -194,7 +216,7 @@ export function InteriorWorld({ onExitHouse, onOpenModal, setTooltip, isFrozen }
       <WindowPane position={[5.99, 2.25, -2.8]} rotation={[0, Math.PI / 2, 0]} size={[1.8, 1.4]} />
 
       <Physics debug={false}>
-        <RoomShell />
+        <RoomShell frontWallRef={frontWallRef} lintelRef={lintelRef} />
 
         {interiorFurniture.map((item, i) => (
           <Furnishing key={`${item.path}-${i}`} {...item} />
@@ -230,7 +252,7 @@ export function InteriorWorld({ onExitHouse, onOpenModal, setTooltip, isFrozen }
           />
         </RigidBody>
 
-        <InteriorPlayer isFrozen={isFrozen} />
+        <InteriorPlayer isFrozen={isFrozen} frontWallRef={frontWallRef} lintelRef={lintelRef} />
       </Physics>
 
       <InteractHint position={[-4.2, 2.05, -3.35]} />
