@@ -21,7 +21,7 @@ Todo el layout vive en `src/config/map.js`:
 
 `face(dx, dz)` calcula el giro para que la puerta (eje local +Z, con el modelo ya centrado en el suelo) mire hacia ese vector. `keep` es el radio libre de vegetación alrededor de un edificio.
 
-Al pulsar «Entrar al planeta» la cámara empieza alejada (zoom 1.65). Para encuadrar el mapa sin jugar: `?vista=mapa` (oblicua), `?vista=cenital` o `?vista=puerta` (a ras de suelo, mirando al norte). `?pies=x,z` pone los pies en ese punto del mapa y `?zoom=` cambia el encuadre (0.58 acerca, 2.55 aleja).
+Al pulsar «Entrar al planeta» la cámara empieza en el máximo alejamiento (zoom 2.55). Para encuadrar el mapa sin jugar: `?vista=mapa` (oblicua), `?vista=cenital` o `?vista=puerta` (a ras de suelo, mirando al norte). `?pies=x,z` pone los pies en ese punto del mapa y `?zoom=` cambia el encuadre (0.58 acerca, 2.55 aleja).
 
 ## Cómo añadir un proyecto
 
