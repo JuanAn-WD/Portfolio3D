@@ -159,8 +159,8 @@ export const buildings = [
     projectId: 'streak365',
     marker: true,
     doorOffset: [1.25, 0],
-    // Fuera del muro, a la izquierda de la puerta peatonal.
-    signOffset: [-1.55, 0, 3.05],
+    // Delante y a la izquierda del edificio, lejos de la puerta y del muro.
+    signOffset: [-2.85, 0, 4.1],
   },
   {
     id: 'home-b',

@@ -209,9 +209,9 @@ export function MapBuilding({
   ]
   // Cartel delante del muro y al otro lado de la puerta, nunca dentro del vano.
   const signLocal = signOffset || [
-    doorX >= 0 ? -Math.max(1.05, halfX * 0.42) : Math.max(1.05, halfX * 0.42),
+    doorX >= 0 ? -Math.max(1.35, halfX * 0.55) : Math.max(1.35, halfX * 0.55),
     0,
-    halfZ + 1.25,
+    halfZ + 1.85,
   ]
 
   useLayoutEffect(() => {
