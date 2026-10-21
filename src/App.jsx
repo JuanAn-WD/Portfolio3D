@@ -13,6 +13,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { LoaderScreen } from './components/LoaderScreen'
 import { BrandIntro } from './components/BrandIntro'
 import { Hud } from './components/Hud'
+import { ClassicSwitch } from './components/ClassicSwitch'
 import { VirtualJoystick } from './components/VirtualJoystick'
 import { usePrefersReducedMotion } from './helpers/usePrefersReducedMotion'
 import { useTouchUi } from './helpers/useTouchUi'
@@ -173,6 +174,8 @@ export default function App() {
       <BrandIntro visible={showIntro} onEnter={dismissIntro} />
 
       <Hud visible={hudOpen && !modalData && !showIntro} onDismiss={hideHud} />
+
+      {assetsReady && !showIntro && !modalData && <ClassicSwitch />}
 
       {tooltip && !modalData && !isFading && !showIntro && (
         <button type="button" className="tooltip" onClick={() => tooltip.action()}>

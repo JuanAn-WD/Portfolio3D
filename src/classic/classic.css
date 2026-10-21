@@ -1,0 +1,185 @@
+/*
+ * Estilos de la vista clásica. Todo cuelga de .classic-root para no tocar el 3D:
+ * - el reset (preflight) de Tailwind está desactivado y aquí va una versión acotada con :where(),
+ * - las variables de color se definen en .classic-root (el 3D usa --surface e --ink con otro formato),
+ * - el modo oscuro es la clase .dark del propio contenedor, no la de <html>.
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Paleta: verdes suaves y azul cielo (inspirada en el Portfolio 3D) */
+.classic-root {
+  color-scheme: light;
+  --bg: 246 248 246;
+  --surface: 255 255 255;
+  --line: 208 220 212;
+  --ink: 20 28 24;
+  --muted: 78 93 84;
+  --leaf: 36 112 66;
+  --sky: 20 100 160;
+  --on-accent: 255 255 255;
+}
+
+.classic-root.dark {
+  color-scheme: dark;
+  --bg: 15 20 18;
+  --surface: 23 30 27;
+  --line: 46 58 52;
+  --ink: 232 238 234;
+  --muted: 160 173 166;
+  --leaf: 143 207 159;
+  --sky: 124 196 240;
+  --on-accent: 15 20 18;
+}
+
+/* Con la clásica montada, la página vuelve a hacer scroll (el 3D lo bloquea en src/index.css). */
+html.classic-active,
+html.classic-active body,
+html.classic-active #root {
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+}
+
+html.classic-active {
+  overflow-y: auto;
+  scroll-padding-top: 5rem;
+  color-scheme: dark;
+  background-color: rgb(15 20 18);
+}
+
+html.classic-active.classic-light {
+  color-scheme: light;
+  background-color: rgb(246 248 246);
+}
+
+html.classic-active body {
+  background-color: transparent;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html.classic-active {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Equivale a html/body del preflight */
+.classic-root {
+  min-height: 100vh;
+  margin: 0;
+  background-color: rgb(var(--bg));
+  color: rgb(var(--ink));
+  font-family: 'Inter Variable', Inter, system-ui, sans-serif;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  tab-size: 4;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Preflight de Tailwind 3, acotado. :where() deja la especificidad como la original. */
+.classic-root,
+:where(.classic-root) *,
+:where(.classic-root) ::before,
+:where(.classic-root) ::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: currentColor;
+}
+:where(.classic-root) ::before,
+:where(.classic-root) ::after {
+  --tw-content: '';
+}
+:where(.classic-root) hr {
+  height: 0;
+  color: inherit;
+  border-top-width: 1px;
+}
+:where(.classic-root) :is(h1, h2, h3, h4, h5, h6) {
+  font-size: inherit;
+  font-weight: inherit;
+}
+:where(.classic-root) a {
+  color: inherit;
+  text-decoration: inherit;
+}
+:where(.classic-root) :is(b, strong) {
+  font-weight: bolder;
+}
+:where(.classic-root) :is(code, kbd, samp, pre) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 1em;
+}
+:where(.classic-root) small {
+  font-size: 80%;
+}
+:where(.classic-root) :is(button, input, optgroup, select, textarea) {
+  font-family: inherit;
+  font-feature-settings: inherit;
+  font-variation-settings: inherit;
+  font-size: 100%;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+}
+:where(.classic-root) :is(button, select) {
+  text-transform: none;
+}
+:where(.classic-root) :is(button, input:where([type='button'], [type='reset'], [type='submit'])) {
+  -webkit-appearance: button;
+  background-color: transparent;
+  background-image: none;
+}
+:where(.classic-root) :is(blockquote, dl, dd, h1, h2, h3, h4, h5, h6, hr, figure, p, pre) {
+  margin: 0;
+}
+:where(.classic-root) :is(ol, ul, menu) {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+:where(.classic-root) :is(button, [role='button']) {
+  cursor: pointer;
+}
+:where(.classic-root) :disabled {
+  cursor: default;
+}
+:where(.classic-root) :is(img, svg, video, canvas, audio, iframe, embed, object) {
+  display: block;
+  vertical-align: middle;
+}
+:where(.classic-root) :is(img, video) {
+  max-width: 100%;
+  height: auto;
+}
+:where(.classic-root) [hidden]:where(:not([hidden='until-found'])) {
+  display: none;
+}
+
+.classic-root :focus-visible {
+  outline: 2px solid rgb(var(--sky));
+  outline-offset: 3px;
+}
+
+.classic-root :is(h1, h2, h3) {
+  text-wrap: balance;
+}
+
+/* Aparición al hacer scroll: solo si la persona no pide menos movimiento */
+@media (prefers-reduced-motion: no-preference) {
+  .classic-root .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .classic-root .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}

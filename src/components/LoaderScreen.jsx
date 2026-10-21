@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useProgress } from '@react-three/drei'
 import { profile } from '../config/content'
+import { VIEW_CLASSIC, handleViewLinkClick, viewHref } from '../helpers/viewMode'
 
 export function LoaderScreen({ onComplete }) {
   const { active, progress, loaded, total } = useProgress()
@@ -18,14 +19,23 @@ export function LoaderScreen({ onComplete }) {
 
   const pct = Math.min(100, Math.round(progress || 0))
   return (
-    <div className="loader-screen" role="status" aria-live="polite">
+    <div className="loader-screen">
       <div className="loader-card">
-        <p className="loader-brand">{profile.name}</p>
-        <p className="loader-title">Cargando el planeta</p>
-        <div className="loader-bar" aria-hidden="true">
-          <span style={{ width: `${pct}%` }} />
+        <div role="status" aria-live="polite">
+          <p className="loader-brand">{profile.name}</p>
+          <p className="loader-title">Cargando el planeta</p>
+          <div className="loader-bar" aria-hidden="true">
+            <span style={{ width: `${pct}%` }} />
+          </div>
+          <p className="loader-meta">{pct}% {total > 0 ? `· ${loaded}/${total} assets` : ''}</p>
         </div>
-        <p className="loader-meta">{pct}% {total > 0 ? `· ${loaded}/${total} assets` : ''}</p>
+        <a
+          className="loader-alt"
+          href={viewHref(VIEW_CLASSIC)}
+          onClick={(e) => handleViewLinkClick(e, VIEW_CLASSIC)}
+        >
+          ¿Sin 3D? Ver portfolio clásico
+        </a>
       </div>
     </div>
   )
