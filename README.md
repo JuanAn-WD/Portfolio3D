@@ -12,7 +12,7 @@ Todo el pueblo está en `src/config/map.js`:
 
 | Export | Qué hay |
 | --- | --- |
-| `buildings` | Casas, tiendas, rascacielos y los edificios de mis proyectos (estudio, Portfolio 3D, Shelvingit y Streak365) |
+| `buildings` | Casas, tiendas, rascacielos y los edificios de mis proyectos (estudio, Portfolio 3D, Shelvingit; Streak365 retirado por ahora) |
 | `paths` | Caminos de tierra, cada punto es `[x, z]` |
 | `lamps` | Farolas `[x, z]` |
 | `fenceRuns` | Vallas, setos y cuerdas. `gate` deja un hueco y con `solid: false` solo choca un poste fino (`hit`) |

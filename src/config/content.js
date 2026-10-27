@@ -56,14 +56,15 @@ export const projects = {
       { label: 'GitHub', href: 'https://github.com/JuanAn-WD/ShelvingIt' },
     ],
   },
-  streak365: {
-    id: 'streak365',
-    title: 'Streak365',
-    description:
-      'Reto de 365 días: registra hábitos diarios, construye tu racha y sube en el ranking global.',
-    tags: ['React', 'PWA', 'Hábitos'],
-    links: [{ label: 'Demo', href: 'https://streak365.vercel.app' }],
-  },
+  // Streak365 retirado por ahora. Para recuperarlo, vuelve a añadirlo aquí y el building `streak` en map.js.
+  // streak365: {
+  //   id: 'streak365',
+  //   title: 'Streak365',
+  //   description:
+  //     'Reto de 365 días: registra hábitos diarios, construye tu racha y sube en el ranking global.',
+  //   tags: ['React', 'PWA', 'Hábitos'],
+  //   links: [{ label: 'Demo', href: 'https://streak365.vercel.app' }],
+  // },
 }
 
 const F = 2.4
