@@ -49,6 +49,43 @@ El estudio funciona distinto (`action: 'enterHouse'`) y su interior se define en
 - `Esc` para cerrar una ficha
 - En el móvil, joystick abajo a la izquierda y pellizco para el zoom
 
+---
+
+## Mi rol y uso de IA
+
+Lo he diseñado y programado yo: la idea del planeta, el mapa, las escenas y la vista clásica. Los 15 commits son míos. Los modelos low-poly son de [Kenney](https://kenney.nl) (CC0).
+
+Era mi primer proyecto con Three.js, así que usé la IA para aprender a desarrollar con Three.js y React Three Fiber. También la usé para depurar: con los errores que iban saliendo, me ayudaba a ir directo a donde estaba el fallo.
+
+## Decisiones técnicas
+
+- **Dos apps cargadas por separado** (`src/Root.jsx:16-17`, `lazy()`): la vista 3D y la clásica no se descargan juntas. Quien elige la clásica no paga el peso de Three.js.
+- **El interior del estudio también se carga aparte** (`src/App.jsx:23`), solo cuando entras.
+- **Instancias para lo que se repite** (`components/FlatInstances.jsx`, `Clouds.jsx:103`, `Fireflies.jsx:47`): un draw call por tipo de objeto en vez de uno por cada árbol o nube.
+- **Liberar memoria de la GPU** al desmontar (`components/MapBuilding.jsx:197`, `texture.dispose()`).
+- **Accesibilidad**: respeto `prefers-reduced-motion` (`helpers/usePrefersReducedMotion.js`), los loaders tienen `role="status"` y `aria-live` (`Root.jsx:50`) y hay una vista clásica sin 3D.
+- **El mapa como datos** (`src/config/map.js`): añadir un edificio o un proyecto no requiere tocar los componentes.
+
+## Stack
+
+React · Vite · React Three Fiber · Three.js · Rapier · Tailwind CSS (vista clásica)
+
+## Próximos pasos (deuda conocida)
+
+- Tests de los helpers y de la configuración del mapa.
+- Medir con Lighthouse y reducir el bundle principal y los assets más pesados de `dist`.
+- Migración progresiva a TypeScript.
+
+---
+
+### English (short)
+
+**My role & AI use.** Designed and built by me: concept, map, scenes and classic view (all 15 commits). The low-poly models are by [Kenney](https://kenney.nl) (CC0). It was my first Three.js project, so I used AI to learn Three.js/R3F and to debug errors faster by going straight to the failing spot.
+**Key decisions.** Lazy-loaded 3D and classic apps; instancing; GPU disposal; reduced-motion and aria-live; data-driven map.
+**Next steps.** Tests, Lighthouse and bundle size, TypeScript.
+
+---
+
 ## Arrancarlo
 
 ```bash
